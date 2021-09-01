@@ -12,14 +12,13 @@ public:
 
     template <typename ... Types>
     inline BufferType& operator()(Types&& ... args) {
-        buffer->process(std::forward<Types>(args)...);
+        process(std::forward<Types>(args)...);
         return *buffer;
     }
 
 protected:
-    template <typename T>
-    inline void process(T&& object) {
-        serialize_impl(object);
+    inline BufferType& getBuffer() {
+        return *buffer;
     }
 
     BufferType* const buffer;
@@ -27,38 +26,49 @@ protected:
 private:
     template <typename T, typename ... OtherTypes>
     inline void process(T&& first, OtherTypes&& ... remains) {
-        buffer->process(std::forward<T>(first));
-        buffer->process(std::forward<OtherTypes>(remains)...);
+        process(std::forward<T>(first));
+        process(std::forward<OtherTypes>(remains)...);
     }
 
     template <typename T>
-    void serialize_impl(const T& obj) {
-        Serializer<BufferType, typename std::remove_reference<T>::type>::serialize(*buffer, const_cast<T&>(obj));
+    inline void process(T&& object){
+        buffer->process(std::forward<T>(object));
     }
-
 };
 
 template <typename BufferType>
 class OutputBuffer : public Buffer<BufferType> {
+    friend class Buffer<BufferType>;
 public:
     OutputBuffer(BufferType* const buffer) : Buffer<BufferType>(buffer) {}
 
     template <typename T>
     inline BufferType& operator<<(T&& arg) {
-        Buffer<BufferType>::buffer->process(std::forward<T>(arg));
-        return *Buffer<BufferType>::buffer;
+        process(std::forward<T>(arg));
+        return Buffer<BufferType>::getBuffer();
+    }
+private:
+    template <typename T>
+    inline void process(T&& object) {
+        Serializer<BufferType, typename std::remove_const<typename std::remove_reference<T>::type>::type>::save(*Buffer<BufferType>::buffer, object);
     }
 };
 
 template <typename BufferType>
 class InputBuffer : public Buffer<BufferType> {
+    friend class Buffer<BufferType>;
 public:
     InputBuffer(BufferType* const buffer) : Buffer<BufferType>(buffer) {}
 
     template <typename T>
     inline BufferType& operator>>(T&& arg) {
-        Buffer<BufferType>::buffer->process(std::forward<T>(arg));
-        return *Buffer<BufferType>::buffer;
+        process(std::forward<T>(arg));
+        return Buffer<BufferType>::getBuffer();
+    }
+private:
+    template <typename T>
+    inline void process(T&& object) {
+        Serializer<BufferType, typename std::remove_reference<T>::type>::load(*Buffer<BufferType>::buffer, object);
     }
 };
 }

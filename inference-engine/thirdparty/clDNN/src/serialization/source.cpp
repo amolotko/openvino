@@ -5,16 +5,19 @@
 #include "vector_serializer.hpp"
 
 struct A {
-    const int Aa;
+    int Aa;
     double Ab;
     std::vector<double> ss;
 
     A() : Aa(0) {}
     A(int a, double b, const std::vector<double>& s) : Aa(a), Ab(b), ss(s) {}
 
-    template <typename BT>
-    void serialize(BT& b) {
-        b(Aa, Ab, ss);
+    void save(cldnn::BinaryOutputBuffer& buffer) const {
+        buffer(Aa, Ab, ss);
+    }
+
+    void load(cldnn::BinaryInputBuffer& buffer) {
+        buffer(Aa, Ab, ss);
     }
 };
 
@@ -22,9 +25,9 @@ int main() {
     int a = 73;
     float b = 3.14f;
     unsigned c = 90;
-    double d = 2.72;
+    const double d = 2.72;
     bool e = true;
-    const A a_a(11, 78.99, {66.0, 78.09});
+    A a_a(11, 78.99, {66.0, 78.09});
     std::vector<int> v{1, 2, 3, 5, 7, 9};
     {
         std::ofstream ofs("archive.bin", std::ios::binary);
@@ -37,7 +40,7 @@ int main() {
     int aa = 0;
     float bb = .0f;
     unsigned cc = 0;
-    const double dd = .4;
+    double dd = .4;
     bool ee = false;
     A a_b;
     std::vector<int> vv;
