@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include "buffer.hpp"
+#include "helpers.hpp"
 
 namespace cldnn {
 class BinaryOutputBuffer : public OutputBuffer<BinaryOutputBuffer> {
@@ -47,6 +48,22 @@ class Serializer<BinaryInputBuffer, T, typename std::enable_if<std::is_arithmeti
 public:
     static void load(BinaryInputBuffer& buffer, T& object) {
         buffer.read(std::addressof(object), sizeof(object));
+    }
+};
+
+template <typename T>
+class Serializer<BinaryOutputBuffer, Data<T>> {
+public:
+    static void save(BinaryOutputBuffer& buffer, const Data<T>& bin_data) {
+        buffer.write(bin_data.data, static_cast<std::streamsize>(bin_data.number_of_bytes));
+    }
+};
+
+template <typename T>
+class Serializer<BinaryInputBuffer, Data<T>> {
+public:
+    static void load(BinaryInputBuffer& buffer, Data<T>& bin_data) {
+        buffer.read(bin_data.data, static_cast<std::streamsize>(bin_data.number_of_bytes));
     }
 };
 

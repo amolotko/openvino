@@ -3,7 +3,7 @@
 #include <vector>
 #include <type_traits>
 #include "buffer.hpp"
-#include "serializer.hpp"
+#include "helpers.hpp"
 
 namespace cldnn {
 template <typename BufferType, typename T>
@@ -13,8 +13,7 @@ class Serializer<BufferType, std::vector<T>, typename std::enable_if<std::is_bas
 public:
     static void save(BufferType& buffer, const std::vector<T>& vector) {
         buffer << vector.size(); //static_cast<uint64_t>()
-        std::cout << "write vector size: " << vector.size() << std::endl;
-        // buffer << binary_data(vector.data(), vector.size() * sizeof(T));
+        buffer << make_data(vector.data(), static_cast<uint64_t>(vector.size() * sizeof(T)));
     }
 };
 
@@ -24,11 +23,10 @@ class Serializer<BufferType, std::vector<T>, typename std::enable_if<std::is_bas
                                                                      !std::is_same<bool, T>::value>::type> {
 public:
     static void load(BufferType& buffer, std::vector<T>& vector) {
-        std::size_t vector_size;
+        typename std::vector<T>::size_type vector_size = 0UL;
         buffer >> vector_size;
         vector.resize(vector_size);
-        std::cout << "Read vector size: " << vector_size << std::endl;
-        // buffer >> binary_data(vector.data(), vector_size * sizeof(T));
+        buffer >> make_data(vector.data(), static_cast<uint64_t>(vector_size * sizeof(T)));
     }
 };
 
@@ -49,7 +47,7 @@ class Serializer<BufferType, std::vector<T>, typename std::enable_if<std::is_bas
                                                                     !std::is_arithmetic<T>::value>::type> {
 public:
     static void load(BufferType& buffer, std::vector<T>& vector) {
-        std::size_t vector_size = 0UL;
+        typename std::vector<T>::size_type vector_size = 0UL;
         buffer >> vector_size;
         vector.resize(vector_size);
         for (auto& el : vector) {
@@ -57,4 +55,5 @@ public:
         }
     }
 };
+
 }
