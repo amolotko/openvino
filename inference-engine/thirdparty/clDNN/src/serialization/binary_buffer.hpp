@@ -5,6 +5,7 @@
 #include <type_traits>
 #include "buffer.hpp"
 #include "helpers.hpp"
+#include "bind.hpp"
 
 namespace cldnn {
 class BinaryOutputBuffer : public OutputBuffer<BinaryOutputBuffer> {
@@ -21,6 +22,8 @@ private:
     std::ostream& stream;
 };
 
+BIND_TO_BUFFER(BinaryOutputBuffer)
+
 class BinaryInputBuffer : public InputBuffer<BinaryInputBuffer> {
 public:
     BinaryInputBuffer(std::istream& stream) : InputBuffer(this), stream(stream) {}
@@ -34,6 +37,8 @@ public:
 private:
     std::istream& stream;
 };
+
+BIND_TO_BUFFER(BinaryInputBuffer)
 
 template <typename T>
 class Serializer<BinaryOutputBuffer, T, typename std::enable_if<std::is_arithmetic<T>::value>::type> {

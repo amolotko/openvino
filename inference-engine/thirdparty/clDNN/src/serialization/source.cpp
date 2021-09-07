@@ -2,10 +2,14 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <memory>
 #include "binary_buffer.hpp"
 #include "vector_serializer.hpp"
 #include "string_serializer.hpp"
+#include "polymorphic_serializer.hpp"
+#include "test_classes.hpp"
 #include "helpers.hpp"
+
 
 struct A {
     int Aa;
@@ -55,11 +59,16 @@ int main() {
     Type type = Type::T3;
     S u = {'a'};
     u.e = 4.77;
+
+    std::vector<std::string> vs{"qqq", "aaa", "zzz"};
+    std::unique_ptr<B> d1 = std::unique_ptr<D1>(new D1(vs));
+    std::unique_ptr<B> d2 = std::unique_ptr<D2>(new D2(Color::GREEN));
     {
         std::ofstream ofs("archive.bin", std::ios::binary);
         cldnn::BinaryOutputBuffer ob(ofs);
 
         ob(a, b, c, d, e, v, a_a, vA, str1, cldnn::make_data(&type, sizeof(Type)), cldnn::make_data(&u, sizeof(S)));
+        ob << d1 << d2;
     }
 
     std::cout << "a: " << a << ", b: " << b << ", c: " << c << ", d: " << d << ", e: " << e << " type: " << type << " u: " << u.e << std::endl;
@@ -74,12 +83,17 @@ int main() {
     std::string str;
     Type type1;
     S u1;
+    std::unique_ptr<B> new_d1;
+    std::unique_ptr<B> new_d2;
     {
         std::ifstream ifs("archive.bin", std::ios::binary);
         cldnn::BinaryInputBuffer bi(ifs);
 
         bi(aa, bb, cc, dd, ee, vv, a_b, vvA, str, cldnn::make_data(&type1, sizeof(Type)), cldnn::make_data(&u1, sizeof(S)));
+        bi >> new_d1 >> new_d2;
     }
+    new_d1->say();
+    new_d2->say();
     std::cout << "aa: " << aa << ", bb: " << bb << ", cc: " << cc << ", dd: " << dd << ", ee: " << ee << " type: " << type1 << " ,u1: " << u1.e << std::endl;
     for (size_t i = 0; i < v.size(); i++) {
         std::cout << "v[" << i << "]: " << v[i] << " vv[" << i << "]: " << vv[i] << std::endl;
