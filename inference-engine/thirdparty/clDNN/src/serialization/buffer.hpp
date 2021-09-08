@@ -2,6 +2,8 @@
 #include <utility>
 #include <type_traits>
 #include "serializer.hpp"
+#include "test_engine.hpp"
+#include "test_classes.hpp"
 
 namespace cldnn {
 
@@ -58,7 +60,7 @@ template <typename BufferType>
 class InputBuffer : public Buffer<BufferType> {
     friend class Buffer<BufferType>;
 public:
-    InputBuffer(BufferType* const buffer) : Buffer<BufferType>(buffer) {}
+    InputBuffer(BufferType* const buffer, Engine& engine) : Buffer<BufferType>(buffer), engine(engine) {}
 
     template <typename T>
     inline BufferType& operator>>(T&& arg) {
@@ -67,8 +69,15 @@ public:
     }
 private:
     template <typename T>
-    inline void process(T&& object) {
+    inline typename std::enable_if<!std::is_same<std::unique_ptr<B>, typename std::remove_reference<T>::type>::value>::type process(T&& object) {
         Serializer<BufferType, typename std::remove_reference<T>::type>::load(*Buffer<BufferType>::buffer, object);
     }
+
+    template <typename T>
+    inline typename std::enable_if<std::is_same<std::unique_ptr<B>, typename std::remove_reference<T>::type>::value>::type process(T&& object) {
+        Serializer<BufferType, typename std::remove_reference<T>::type>::load(*Buffer<BufferType>::buffer, object, engine);
+    }
+
+    Engine& engine;
 };
 }

@@ -57,23 +57,23 @@ template <typename BufferType>
 class buffer_binder<BufferType, typename std::enable_if<std::is_base_of<InputBuffer<BufferType>, BufferType>::value>::type> {
 public:
     buffer_binder() {
-        load_functions[PrimitiveImplType::B] = (*this).template load<B>;
+        // load_functions[PrimitiveImplType::B] = (*this).template load<B>;
         load_functions[PrimitiveImplType::D1] = (*this).template load<D1>;
         load_functions[PrimitiveImplType::D2] = (*this).template load<D2>;
     }
 
-    std::function<void(BufferType&, std::unique_ptr<void, void_deleter<void>>&)> getLoadFunction(const PrimitiveImplType& type) const {
+    std::function<void(BufferType&, std::unique_ptr<void, void_deleter<void>>&, Engine&)> getLoadFunction(const PrimitiveImplType& type) const {
         return load_functions.at(type);
     }
 private:
     template <typename T>
-    static void load(BufferType& buffer, std::unique_ptr<void, void_deleter<void>>& result_ptr) {
-        std::unique_ptr<T> derived_ptr = std::unique_ptr<T>(new T());
+    static typename std::enable_if<std::is_base_of<B, T>::value>::type load(BufferType& buffer, std::unique_ptr<void, void_deleter<void>>& result_ptr, Engine& engine) {
+        std::unique_ptr<T> derived_ptr = std::unique_ptr<T>(new T(engine));
         derived_ptr->load(buffer);
         result_ptr.reset(derived_ptr.release());
     }
 
-    std::unordered_map<PrimitiveImplType, std::function<void(BufferType&, std::unique_ptr<void, void_deleter<void>>&)>> load_functions;
+    std::unordered_map<PrimitiveImplType, std::function<void(BufferType&, std::unique_ptr<void, void_deleter<void>>&, Engine&)>> load_functions;
 };
 
 template <typename T>

@@ -6,12 +6,13 @@
 #include <vector>
 #include "object_types.hpp"
 #include "helpers.hpp"
+#include "test_engine.hpp"
 
 class B {
 public:
-    B() = default;
+    B(Engine& engine) : engine(engine) {}
 
-    B(const std::string& str) : str(str) {}
+    B(Engine& engine, const std::string& str) : engine(engine), str(str) {}
 
     virtual ~B() = default;
 
@@ -34,6 +35,14 @@ public:
         buffer(str);
         std::cout << "Load B" << std::endl;
     }
+
+    Engine& getEngine() {
+        return engine;
+    }
+
+    virtual void abstract() = 0;
+protected:
+    Engine& engine;
 private:
     static const cldnn::PrimitiveImplType type;
     std::string str;
@@ -43,9 +52,9 @@ private:
 class D1 : public B {
     using parent = B;
 public:
-    D1() = default;
+    D1(Engine& engine) : parent(engine) {}
 
-    D1(const std::vector<std::string> vs) : parent("from D1"), vs(vs) {}
+    D1(Engine& engine, const std::vector<std::string> vs) : parent(engine, "from D1"), vs(vs) {}
 
     cldnn::PrimitiveImplType getHash() override {
         return type;
@@ -70,8 +79,11 @@ public:
     void load(T& buffer) {
         parent::load(buffer);
         buffer(vs);
+        engine.allocate();
         std::cout << "Load D1" << std::endl;
     }
+
+    void abstract() override {}
 private:
     static const cldnn::PrimitiveImplType type;
     std::vector<std::string> vs;
@@ -81,9 +93,9 @@ enum class Color {RED, GREEN, BLUE};
 class D2 : public B {
     using parent = B;
 public:
-    D2() = default;
+    D2(Engine& engine) : parent(engine) {}
 
-    D2(const Color& color) : parent("from D2"), color(color) {}
+    D2(Engine& engine, const Color& color) : parent(engine, "from D2"), color(color) {}
 
     cldnn::PrimitiveImplType getHash() override {
         return type;
@@ -106,8 +118,11 @@ public:
     void load(T& buffer) {
         parent::load(buffer);
         buffer(cldnn::make_data(&color, sizeof(Color)));
+        engine.allocate();
         std::cout << "Load D2" << std::endl;
     }
+
+    void abstract() override {}
 private:
     static const cldnn::PrimitiveImplType type;
     Color color = Color::BLUE;

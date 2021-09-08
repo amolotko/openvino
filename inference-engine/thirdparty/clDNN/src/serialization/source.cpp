@@ -60,9 +60,10 @@ int main() {
     S u = {'a'};
     u.e = 4.77;
 
+    Engine engine;
     std::vector<std::string> vs{"qqq", "aaa", "zzz"};
-    std::unique_ptr<B> d1 = std::unique_ptr<D1>(new D1(vs));
-    std::unique_ptr<B> d2 = std::unique_ptr<D2>(new D2(Color::GREEN));
+    std::unique_ptr<B> d1 = std::unique_ptr<D1>(new D1(engine, vs));
+    std::unique_ptr<B> d2 = std::unique_ptr<D2>(new D2(engine, Color::GREEN));
     {
         std::ofstream ofs("archive.bin", std::ios::binary);
         cldnn::BinaryOutputBuffer ob(ofs);
@@ -87,7 +88,7 @@ int main() {
     std::unique_ptr<B> new_d2;
     {
         std::ifstream ifs("archive.bin", std::ios::binary);
-        cldnn::BinaryInputBuffer bi(ifs);
+        cldnn::BinaryInputBuffer bi(ifs, engine);
 
         bi(aa, bb, cc, dd, ee, vv, a_b, vvA, str, cldnn::make_data(&type1, sizeof(Type)), cldnn::make_data(&u1, sizeof(S)));
         bi >> new_d1 >> new_d2;

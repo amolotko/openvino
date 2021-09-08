@@ -6,6 +6,7 @@
 #include "buffer.hpp"
 #include "helpers.hpp"
 #include "bind.hpp"
+#include "test_engine.hpp"
 
 namespace cldnn {
 class BinaryOutputBuffer : public OutputBuffer<BinaryOutputBuffer> {
@@ -26,7 +27,7 @@ BIND_TO_BUFFER(BinaryOutputBuffer)
 
 class BinaryInputBuffer : public InputBuffer<BinaryInputBuffer> {
 public:
-    BinaryInputBuffer(std::istream& stream) : InputBuffer(this), stream(stream) {}
+    BinaryInputBuffer(std::istream& stream, Engine& engine) : InputBuffer(this, engine), stream(stream) {}
 
     void read(void* const data, std::streamsize size) {
         auto const read_size = stream.rdbuf()->sgetn(reinterpret_cast<char*>(data), size);
