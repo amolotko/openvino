@@ -3,11 +3,11 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include "test_classes.hpp"
 #include "binary_buffer.hpp"
 #include "vector_serializer.hpp"
 #include "string_serializer.hpp"
 #include "polymorphic_serializer.hpp"
-#include "test_classes.hpp"
 #include "helpers.hpp"
 
 
@@ -46,6 +46,7 @@ union S
 
 
 int main() {
+    std::cout << "+++START PROGRAM+++" << std::endl;
     int a = 73;
     float b = 3.14f;
     unsigned c = 90;
@@ -61,9 +62,9 @@ int main() {
     u.e = 4.77;
 
     Engine engine;
-    std::vector<std::string> vs{"qqq", "aaa", "zzz"};
-    std::unique_ptr<B> d1 = std::unique_ptr<D1>(new D1(engine, vs));
-    std::unique_ptr<B> d2 = std::unique_ptr<D2>(new D2(engine, Color::GREEN));
+    
+    std::unique_ptr<B> d1 = create_D1(engine);
+    std::unique_ptr<B> d2 = create_D2(engine);
     {
         std::ofstream ofs("archive.bin", std::ios::binary);
         cldnn::BinaryOutputBuffer ob(ofs);

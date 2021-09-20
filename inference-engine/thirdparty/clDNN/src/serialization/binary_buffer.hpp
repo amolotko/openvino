@@ -23,8 +23,6 @@ private:
     std::ostream& stream;
 };
 
-BIND_TO_BUFFER(BinaryOutputBuffer)
-
 class BinaryInputBuffer : public InputBuffer<BinaryInputBuffer> {
 public:
     BinaryInputBuffer(std::istream& stream, Engine& engine) : InputBuffer(this, engine), stream(stream) {}
@@ -38,8 +36,6 @@ public:
 private:
     std::istream& stream;
 };
-
-BIND_TO_BUFFER(BinaryInputBuffer)
 
 template <typename T>
 class Serializer<BinaryOutputBuffer, T, typename std::enable_if<std::is_arithmetic<T>::value>::type> {
@@ -74,3 +70,8 @@ public:
 };
 
 }
+#define BIND_BINARY_BUFFER_WITH_TYPE(type)           \
+            namespace cldnn {                        \
+            BIND_TO_BUFFER(BinaryOutputBuffer, type) \
+            BIND_TO_BUFFER(BinaryInputBuffer, type)  \
+            }
