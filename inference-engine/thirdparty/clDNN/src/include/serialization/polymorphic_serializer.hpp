@@ -28,9 +28,18 @@ public:
     static void load(BufferType& buffer, std::unique_ptr<T>& ptr, engine& engine) {
         object_type type;
         buffer >> cldnn::make_data(&type, sizeof(object_type));
-        const auto load_func = loader_storage<BufferType>::instance().get_load_function(type);
+        const auto load_func = dif<BufferType>::instance().get_load_function(type);
         std::unique_ptr<void, void_deleter<void>> result;
         load_func(buffer, result, engine);
+        ptr.reset(static_cast<T*>(result.release()));
+    }
+
+    static void load(BufferType& buffer, std::unique_ptr<T>& ptr) {
+        object_type type;
+        buffer >> cldnn::make_data(&type, sizeof(object_type));
+        const auto load_func = def<BufferType>::instance().get_load_function(type);
+        std::unique_ptr<void, void_deleter<void>> result;
+        load_func(buffer, result);
         ptr.reset(static_cast<T*>(result.release()));
     }
 };

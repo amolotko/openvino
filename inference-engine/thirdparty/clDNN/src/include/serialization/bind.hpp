@@ -47,17 +47,16 @@ struct void_deleter {
     void operator()(const T*) const { }
 };
 
-template <typename BufferType>
+template <typename BufferType, typename FuncT>
 struct loader_storage {
-    using load_function = std::function<void(BufferType&, std::unique_ptr<void, void_deleter<void>>&, engine&)>;
-    using value_type = typename std::unordered_map<object_type, load_function>::value_type;
+    using value_type = typename std::unordered_map<object_type, FuncT>::value_type;
 
     static loader_storage& instance() {
         static loader_storage instance;
         return instance;
     }
 
-    const load_function& get_load_function(const object_type& type) {
+    const FuncT& get_load_function(const object_type& type) {
         return map.at(type);
     }
 
@@ -65,17 +64,19 @@ struct loader_storage {
         map.insert(pair);
     }
 
-    std::size_t get_size() {
-        return map.size();
-    }
-
 private:
     loader_storage() = default;
     loader_storage(const loader_storage&) = delete;
     void operator=(const loader_storage&) = delete;
 
-    std::unordered_map<object_type, load_function> map;
+    std::unordered_map<object_type, FuncT> map;
 };
+
+template <typename BufferType>
+using def = loader_storage<BufferType, std::function<void(BufferType&, std::unique_ptr<void, void_deleter<void>>&)>>;
+
+template <typename BufferType>
+using dif = loader_storage<BufferType, std::function<void(BufferType&, std::unique_ptr<void, void_deleter<void>>&, engine&)>>;
 
 template <typename BufferType, typename T, typename Enable = void>
 class buffer_binder;
@@ -109,7 +110,8 @@ private:
 };
 
 template <typename BufferType, typename T>
-class buffer_binder<BufferType, T, typename std::enable_if<std::is_base_of<InputBuffer<BufferType>, BufferType>::value>::type> {
+class buffer_binder<BufferType, T, typename std::enable_if<std::is_base_of<InputBuffer<BufferType>, BufferType>::value && 
+                                                           std::is_default_constructible<T>::value>::type> {
 public:
     static buffer_binder& instance() {
         static buffer_binder instance;
@@ -118,18 +120,39 @@ public:
 
 private:
     buffer_binder() {
-        loader_storage<BufferType>::instance().set_load_function({T::type, load});
+        def<BufferType>::instance().set_load_function({T::type, [](BufferType& buffer, std::unique_ptr<void, void_deleter<void>>& result_ptr) {
+            std::unique_ptr<T> derived_ptr = std::unique_ptr<T>(new T());
+            derived_ptr->load(buffer);
+            result_ptr.reset(derived_ptr.release());
+        }});
         std::cout << "add load" << std::endl;
     }
 
     buffer_binder(const buffer_binder&) = delete;
     void operator=(const buffer_binder&) = delete;
+};
 
-    static void load(BufferType& buffer, std::unique_ptr<void, void_deleter<void>>& result_ptr, engine& engine) {
-        std::unique_ptr<T> derived_ptr = std::unique_ptr<T>(new T(engine));
-        derived_ptr->load(buffer);
-        result_ptr.reset(derived_ptr.release());
+template <typename BufferType, typename T>
+class buffer_binder<BufferType, T, typename std::enable_if<std::is_base_of<InputBuffer<BufferType>, BufferType>::value && 
+                                                           !std::is_default_constructible<T>::value>::type> {
+public:
+    static buffer_binder& instance() {
+        static buffer_binder instance;
+        return instance;
     }
+
+private:
+    buffer_binder() {
+        dif<BufferType>::instance().set_load_function({T::type, [](BufferType& buffer, std::unique_ptr<void, void_deleter<void>>& result_ptr, engine& engine) {
+            std::unique_ptr<T> derived_ptr = std::unique_ptr<T>(new T(engine));
+            derived_ptr->load(buffer);
+            result_ptr.reset(derived_ptr.release());
+        }});
+        std::cout << "add load with engine" << std::endl;
+    }
+
+    buffer_binder(const buffer_binder&) = delete;
+    void operator=(const buffer_binder&) = delete;
 };
 
 template <typename BufferType, typename T>
