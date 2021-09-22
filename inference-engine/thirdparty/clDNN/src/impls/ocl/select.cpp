@@ -9,6 +9,8 @@
 #include "kernel_selector_helper.h"
 #include "select/select_kernel_selector.h"
 #include "select/select_kernel_base.h"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 
 namespace cldnn {
 namespace ocl {
@@ -16,10 +18,21 @@ namespace ocl {
 struct select_impl : typed_primitive_impl_ocl<select> {
     using parent = typed_primitive_impl_ocl<select>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<select_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 public:
     static primitive_impl* create(const select_node& arg) {
@@ -43,6 +56,8 @@ public:
     }
 };
 
+const object_type select_impl::type = object_type::SELECT_IMPL;
+
 namespace detail {
 
 attach_select_impl::attach_select_impl() {
@@ -65,3 +80,5 @@ attach_select_impl::attach_select_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::select_impl)

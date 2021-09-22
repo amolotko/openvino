@@ -14,6 +14,7 @@
 #include "meta_utils.h"
 #include "program_node.h"
 #include "primitive_type.h"
+#include "object_types.hpp"
 
 #include <memory>
 #include <vector>
@@ -47,6 +48,9 @@ struct primitive_impl {
     virtual ~primitive_impl() = default;
 
     virtual std::vector<layout> get_internal_buffer_layouts() const = 0;
+    virtual object_type get_type() const {
+        return object_type::NONE;
+    }
     virtual void align_state(const program_node&) {}
     virtual void set_arguments(primitive_inst& instance) = 0;
     virtual event::ptr execute(const std::vector<event::ptr>& events, primitive_inst& instance) = 0;

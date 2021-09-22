@@ -10,6 +10,8 @@
 #include "kernel_runner.h"
 #include "convolution/convolution_kernel_selector.h"
 #include "convolution/convolution_params.h"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 #include <algorithm>
 
 namespace cldnn {
@@ -18,6 +20,7 @@ namespace ocl {
 struct deformable_conv_impl : typed_primitive_impl_ocl<deformable_conv> {
     using parent = typed_primitive_impl_ocl<deformable_conv>;
     using parent::parent;
+    static const object_type type;
 
     deformable_conv_impl(const deformable_conv_impl& other) : parent(other),
     _split(other._split),
@@ -39,6 +42,16 @@ struct deformable_conv_impl : typed_primitive_impl_ocl<deformable_conv> {
         _split = deformable_conv_node.get_split();
         _groups = deformable_conv_node.get_groups();
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 protected:
     kernel_arguments_data get_arguments(typed_primitive_inst<deformable_conv>& instance, int32_t split) const override {
@@ -96,13 +109,26 @@ private:
     uint32_t _groups = 1;
 };
 
+const object_type deformable_conv_impl::type = object_type::DEFORMABLE_CONV_IMPL;
+
 struct deformable_interp_impl : typed_primitive_impl_ocl<deformable_interp> {
     using parent = typed_primitive_impl_ocl<deformable_interp>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<deformable_interp_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 protected:
     int32_t get_split() const override { return 1; } //TO DO: Can be removed
@@ -162,6 +188,8 @@ public:
     }
 };
 
+const object_type deformable_interp_impl::type = object_type::DEFORMABLE_INTERP_IMPL;
+
 namespace detail {
 
 attach_deformable_conv_impl::attach_deformable_conv_impl() {
@@ -181,3 +209,6 @@ attach_deformable_interp_impl::attach_deformable_interp_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::deformable_conv_impl)
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::deformable_interp_impl)

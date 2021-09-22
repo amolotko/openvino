@@ -9,6 +9,8 @@
 #include "gather/gather_kernel_selector.h"
 #include "gather/gather_kernel_ref.h"
 #include "cldnn/runtime/error_handler.hpp"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 
 using namespace cldnn;
 
@@ -36,10 +38,21 @@ kernel_selector::gather_axis convert_axis(gather::gather_axis axis) {
 struct gather_impl : typed_primitive_impl_ocl<gather> {
     using parent = typed_primitive_impl_ocl<gather>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<gather_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 public:
     static primitive_impl* create(const gather_node& arg) {
@@ -64,6 +77,8 @@ public:
         return new gather_impl(arg, best_kernels[0]);
     }
 };
+
+const object_type gather_impl::type = object_type::GATHER_IMPL;
 
 namespace detail {
 
@@ -92,3 +107,5 @@ attach_gather_impl::attach_gather_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::gather_impl)

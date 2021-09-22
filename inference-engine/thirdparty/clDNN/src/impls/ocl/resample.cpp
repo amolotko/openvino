@@ -9,6 +9,8 @@
 #include "kernel_selector_helper.h"
 #include "kernel_selector/core/actual_kernels/resample/resample_kernel_selector.h"
 #include "kernel_selector/core/actual_kernels/resample/resample_kernel_base.h"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 
 namespace cldnn {
 namespace ocl {
@@ -99,10 +101,21 @@ inline kernel_selector::interpolate_axis convert_axis(resample::resample_axis ax
 struct resample_impl : typed_primitive_impl_ocl<resample> {
     using parent = typed_primitive_impl_ocl<resample>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<resample_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
     static primitive_impl* create(const resample_node& arg) {
         auto us_params = get_default_params<kernel_selector::resample_params>(arg);
@@ -138,6 +151,8 @@ struct resample_impl : typed_primitive_impl_ocl<resample> {
         return new resample_impl(arg, best_kernels[0]);
     }
 };
+
+const object_type resample_impl::type = object_type::RESAMPLE_IMPL;
 
 namespace detail {
 
@@ -191,3 +206,5 @@ attach_resample_impl::attach_resample_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::resample_impl)

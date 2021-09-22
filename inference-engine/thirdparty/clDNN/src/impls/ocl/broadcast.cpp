@@ -10,6 +10,8 @@
 #include "broadcast/broadcast_kernel_selector.h"
 #include "broadcast/broadcast_kernel_base.h"
 #include "cldnn/runtime/error_handler.hpp"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 
 namespace cldnn {
 namespace ocl {
@@ -17,10 +19,21 @@ namespace ocl {
 struct broadcast_impl : typed_primitive_impl_ocl<broadcast> {
     using parent = typed_primitive_impl_ocl<broadcast>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<broadcast_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
     static primitive_impl* create(const broadcast_node& arg) {
         auto bc_params = get_default_params<kernel_selector::broadcast_params>(arg, 1);
@@ -61,6 +74,8 @@ struct broadcast_impl : typed_primitive_impl_ocl<broadcast> {
     }
 };
 
+const object_type broadcast_impl::type = object_type::BROADCAST_IMPL;
+
 namespace detail {
 
 attach_broadcast_impl::attach_broadcast_impl() {
@@ -83,3 +98,5 @@ attach_broadcast_impl::attach_broadcast_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::broadcast_impl)

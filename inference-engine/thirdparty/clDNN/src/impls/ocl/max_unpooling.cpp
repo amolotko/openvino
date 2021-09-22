@@ -10,6 +10,8 @@
 #include "kernel_selector_helper.h"
 #include "max_unpooling/max_unpooling_kernel_selector.h"
 #include "max_unpooling/max_unpooling_kernel_base.h"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 #include <vector>
 
 namespace cldnn {
@@ -18,10 +20,21 @@ namespace ocl {
 struct max_unpooling_impl : typed_primitive_impl_ocl<max_unpooling> {
     using parent = typed_primitive_impl_ocl<max_unpooling>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<max_unpooling_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 protected:
     kernel_arguments_data get_arguments(typed_primitive_inst<max_unpooling>& instance, int32_t split) const override {
@@ -59,6 +72,8 @@ public:
     }
 };
 
+const object_type max_unpooling_impl::type = object_type::MAX_UNPOOLING_IMPL;
+
 namespace detail {
 
 attach_max_unpooling_impl::attach_max_unpooling_impl() {
@@ -78,3 +93,5 @@ attach_max_unpooling_impl::attach_max_unpooling_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::max_unpooling_impl)

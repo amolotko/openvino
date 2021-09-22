@@ -11,6 +11,8 @@
 #include "kernel_runner.h"
 #include "convolution/convolution_kernel_selector.h"
 #include "convolution/convolution_params.h"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 #include <algorithm>
 #include <memory>
 
@@ -20,6 +22,7 @@ namespace ocl {
 struct convolution_impl : typed_primitive_impl_ocl<convolution> {
     using parent = typed_primitive_impl_ocl<convolution>;
     using parent::parent;
+    static const object_type type;
 
     convolution_impl(const convolution_impl& other) : parent(other),
     _id(other._id),
@@ -47,6 +50,16 @@ struct convolution_impl : typed_primitive_impl_ocl<convolution> {
         _groups = convolution_node.get_groups();
         _depthwise_sep_opt = convolution_node.get_depthwise_sep_opt();
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 protected:
     bool validate_impl(const typed_primitive_inst<convolution>& instance) const override {
@@ -183,6 +196,8 @@ private:
     bool _depthwise_sep_opt = false;
 };
 
+const object_type convolution_impl::type = object_type::CONVOLUTION_IMPL;
+
 namespace detail {
 
 attach_convolution_impl::attach_convolution_impl() {
@@ -252,3 +267,5 @@ attach_convolution_impl::attach_convolution_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::convolution_impl)

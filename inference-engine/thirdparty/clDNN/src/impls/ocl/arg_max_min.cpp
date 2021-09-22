@@ -5,11 +5,13 @@
 #include "arg_max_min_inst.h"
 #include "primitive_base.hpp"
 #include "impls/implementation_map.hpp"
+#include "object_types.hpp"
 #include "cldnn/runtime/error_handler.hpp"
 #include "kernel_selector_helper.h"
 #include "arg_max_min/arg_max_min_kernel_selector.h"
 #include "arg_max_min/arg_max_min_kernel_base.h"
 #include "kernel_runner.h"
+#include "serialization/binary_buffer.hpp"
 
 namespace cldnn {
 namespace ocl {
@@ -17,10 +19,21 @@ namespace ocl {
 struct arg_max_min_impl : typed_primitive_impl_ocl<arg_max_min> {
     using parent = typed_primitive_impl_ocl<arg_max_min>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<arg_max_min_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 protected:
     kernel_arguments_data get_arguments(typed_primitive_inst<arg_max_min>& instance, int32_t) const override {
@@ -102,6 +115,8 @@ public:
     }
 };
 
+const object_type arg_max_min_impl::type = object_type::ARG_MAX_MIN_IMPL;
+
 namespace detail {
 attach_arg_max_min_impl::attach_arg_max_min_impl() {
     implementation_map<arg_max_min>::add(impl_types::ocl, arg_max_min_impl::create,  {
@@ -120,3 +135,4 @@ attach_arg_max_min_impl::attach_arg_max_min_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::arg_max_min_impl)

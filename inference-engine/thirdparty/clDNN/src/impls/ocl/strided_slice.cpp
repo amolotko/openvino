@@ -10,6 +10,8 @@
 #include "strided_slice/strided_slice_kernel_selector.h"
 #include "cldnn/runtime/error_handler.hpp"
 #include "data_inst.h"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 #include <vector>
 
 using namespace cldnn;
@@ -20,10 +22,21 @@ namespace ocl {
 struct strided_slice_impl : typed_primitive_impl_ocl<strided_slice> {
     using parent = typed_primitive_impl_ocl<strided_slice>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<strided_slice_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 public:
     static primitive_impl* create(const strided_slice_node& arg) {
@@ -108,6 +121,8 @@ public:
     }
 };
 
+const object_type strided_slice_impl::type = object_type::STRIDED_SLICE_IMPL;
+
 namespace detail {
 
 attach_strided_slice_impl::attach_strided_slice_impl() {
@@ -126,3 +141,5 @@ attach_strided_slice_impl::attach_strided_slice_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::strided_slice_impl)

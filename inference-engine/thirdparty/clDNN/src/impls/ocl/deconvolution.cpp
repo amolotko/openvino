@@ -9,6 +9,8 @@
 #include "kernel_selector_helper.h"
 #include "deconvolution/deconvolution_kernel_selector.h"
 #include "deconvolution/deconvolution_kernel_base.h"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 #include <algorithm>
 
 namespace cldnn {
@@ -17,6 +19,7 @@ namespace ocl {
 struct deconvolution_impl : typed_primitive_impl_ocl<deconvolution> {
     using parent = typed_primitive_impl_ocl<deconvolution>;
     using parent::parent;
+    static const object_type type;
 
     deconvolution_impl(const deconvolution_impl& other) : parent(other),
     _id(other._id),
@@ -44,6 +47,16 @@ struct deconvolution_impl : typed_primitive_impl_ocl<deconvolution> {
         _split = deconvolution_node.get_split();
         _groups = deconvolution_node.get_groups();
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 protected:
     // TODO: share it with convolution and fully connected
@@ -136,6 +149,8 @@ private:
     uint32_t _groups = 1;
 };
 
+const object_type deconvolution_impl::type = object_type::DECONVOLUTION_IMPL;
+
 namespace detail {
 
 attach_deconvolution_impl::attach_deconvolution_impl() {
@@ -173,3 +188,5 @@ attach_deconvolution_impl::attach_deconvolution_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::deconvolution_impl)

@@ -9,6 +9,7 @@
 #include "jitter.h"
 #include "cldnn/runtime/error_handler.hpp"
 #include "register.hpp"
+#include "object_types.hpp"
 
 #include <map>
 #include <sstream>

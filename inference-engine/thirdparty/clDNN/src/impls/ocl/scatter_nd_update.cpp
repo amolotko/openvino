@@ -9,6 +9,8 @@
 #include "scatter_update/scatter_nd_update_kernel_selector.h"
 #include "scatter_update/scatter_nd_update_kernel_ref.h"
 #include "cldnn/runtime/error_handler.hpp"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 
 using namespace cldnn;
 
@@ -18,10 +20,21 @@ namespace ocl {
 struct scatter_nd_update_impl : typed_primitive_impl_ocl<scatter_nd_update> {
     using parent = typed_primitive_impl_ocl<scatter_nd_update>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<scatter_nd_update_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 public:
     static primitive_impl* create(const scatter_nd_update_node& arg) {
@@ -46,6 +59,8 @@ public:
     }
 };
 
+const object_type scatter_nd_update_impl::type = object_type::SCATTER_ND_UPDATE_IMPL;
+
 namespace detail {
 
 attach_scatter_nd_update_impl::attach_scatter_nd_update_impl() {
@@ -65,3 +80,5 @@ attach_scatter_nd_update_impl::attach_scatter_nd_update_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::scatter_nd_update_impl)

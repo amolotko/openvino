@@ -9,6 +9,8 @@
 #include "shuffle_channels/shuffle_channels_kernel_selector.h"
 #include "shuffle_channels/shuffle_channels_kernel_ref.h"
 #include "cldnn/runtime/error_handler.hpp"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 
 using namespace cldnn;
 
@@ -18,10 +20,21 @@ namespace ocl {
 struct shuffle_channels_impl : typed_primitive_impl_ocl<shuffle_channels> {
     using parent = typed_primitive_impl_ocl<shuffle_channels>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<shuffle_channels_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 public:
     static primitive_impl* create(const shuffle_channels_node& arg) {
@@ -49,6 +62,8 @@ public:
         return new shuffle_channels_impl(arg, best_kernels[0]);
     }
 };
+
+const object_type shuffle_channels_impl::type = object_type::SHUFFLE_CHANNELS_IMPL;
 
 namespace detail {
 
@@ -78,3 +93,5 @@ attach_shuffle_channels_impl::attach_shuffle_channels_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::shuffle_channels_impl)

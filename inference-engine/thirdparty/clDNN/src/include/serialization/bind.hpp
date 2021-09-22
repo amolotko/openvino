@@ -19,14 +19,14 @@ namespace cldnn {
 template <typename BufferType>
 struct saver_storage {
     using save_function = std::function<void(BufferType&, const void*)>;
-    using value_type = typename std::unordered_map<PrimitiveImplType, save_function>::value_type;
+    using value_type = typename std::unordered_map<object_type, save_function>::value_type;
 
-    static saver_storage& instance() {
-        static saver_storage instance;
+    static saver_storage<BufferType>& instance() {
+        static saver_storage<BufferType> instance;
         return instance;
     }
 
-    const save_function& get_save_function(const PrimitiveImplType& type) const {
+    const save_function& get_save_function(const object_type& type) const {
         return map.at(type);
     }
 
@@ -39,7 +39,7 @@ private:
     saver_storage(const saver_storage&) = delete;
     void operator=(const saver_storage&) = delete;
 
-    std::unordered_map<PrimitiveImplType, save_function> map;
+    std::unordered_map<object_type, save_function> map;
 };
 
 template <typename T>
@@ -49,15 +49,15 @@ struct void_deleter {
 
 template <typename BufferType>
 struct loader_storage {
-    using load_function = std::function<void(BufferType&, std::unique_ptr<void, void_deleter<void>>&, Engine&)>;
-    using value_type = typename std::unordered_map<PrimitiveImplType, load_function>::value_type;
+    using load_function = std::function<void(BufferType&, std::unique_ptr<void, void_deleter<void>>&, engine&)>;
+    using value_type = typename std::unordered_map<object_type, load_function>::value_type;
 
     static loader_storage& instance() {
         static loader_storage instance;
         return instance;
     }
 
-    const load_function& get_load_function(const PrimitiveImplType& type) {
+    const load_function& get_load_function(const object_type& type) {
         return map.at(type);
     }
 
@@ -65,12 +65,16 @@ struct loader_storage {
         map.insert(pair);
     }
 
+    std::size_t get_size() {
+        return map.size();
+    }
+
 private:
     loader_storage() = default;
     loader_storage(const loader_storage&) = delete;
     void operator=(const loader_storage&) = delete;
 
-    std::unordered_map<PrimitiveImplType, load_function> map;
+    std::unordered_map<object_type, load_function> map;
 };
 
 template <typename BufferType, typename T, typename Enable = void>
@@ -121,7 +125,7 @@ private:
     buffer_binder(const buffer_binder&) = delete;
     void operator=(const buffer_binder&) = delete;
 
-    static typename std::enable_if<std::is_base_of<B, T>::value>::type load(BufferType& buffer, std::unique_ptr<void, void_deleter<void>>& result_ptr, Engine& engine) {
+    static void load(BufferType& buffer, std::unique_ptr<void, void_deleter<void>>& result_ptr, engine& engine) {
         std::unique_ptr<T> derived_ptr = std::unique_ptr<T>(new T(engine));
         derived_ptr->load(buffer);
         result_ptr.reset(derived_ptr.release());

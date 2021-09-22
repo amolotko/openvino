@@ -10,6 +10,8 @@
 #include "space_to_batch/space_to_batch_kernel_ref.h"
 #include "cldnn/runtime/error_handler.hpp"
 #include "data_inst.h"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 #include <vector>
 
 using namespace cldnn;
@@ -19,10 +21,21 @@ namespace ocl {
 struct space_to_batch_impl : typed_primitive_impl_ocl<space_to_batch> {
     using parent = typed_primitive_impl_ocl<space_to_batch>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<space_to_batch_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 public:
     static primitive_impl* create(const space_to_batch_node& arg) {
@@ -47,6 +60,8 @@ public:
         return new space_to_batch_impl(arg, best_kernels[0]);
     }
 };
+
+const object_type space_to_batch_impl::type = object_type::SPACE_TO_BATCH_IMPL;
 
 namespace detail {
 
@@ -74,3 +89,5 @@ attach_space_to_batch_impl::attach_space_to_batch_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::space_to_batch_impl)

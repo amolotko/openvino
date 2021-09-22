@@ -8,6 +8,8 @@
 #include "kernel_selector_helper.h"
 #include "gather/gather_nd_kernel_selector.h"
 #include "gather/gather_nd_kernel_ref.h"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 
 using namespace cldnn;
 
@@ -17,10 +19,21 @@ namespace ocl {
 struct gather_nd_impl : typed_primitive_impl_ocl<gather_nd> {
     using parent = typed_primitive_impl_ocl<gather_nd>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<gather_nd_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
     static primitive_impl* create(const gather_nd_node& arg) {
         auto gather_nd_params = get_default_params<kernel_selector::gather_nd_params>(arg);
@@ -44,6 +57,8 @@ struct gather_nd_impl : typed_primitive_impl_ocl<gather_nd> {
     }
 };
 
+const object_type gather_nd_impl::type = object_type::GATHER_ND_IMPL;
+
 namespace detail {
 
 attach_gather_nd_impl::attach_gather_nd_impl() {
@@ -63,3 +78,5 @@ attach_gather_nd_impl::attach_gather_nd_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::gather_nd_impl)

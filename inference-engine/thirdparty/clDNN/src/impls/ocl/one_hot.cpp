@@ -10,6 +10,8 @@
 #include "one_hot/one_hot_kernel_selector.h"
 #include "one_hot/one_hot_kernel_base.h"
 #include "cldnn/runtime/error_handler.hpp"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 #include <vector>
 
 namespace cldnn {
@@ -18,10 +20,21 @@ namespace ocl {
 struct one_hot_impl : typed_primitive_impl_ocl<one_hot> {
     using parent = typed_primitive_impl_ocl<one_hot>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<one_hot_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
     static primitive_impl* create(const one_hot_node& arg) {
         auto oh_params = get_default_params<kernel_selector::one_hot_params>(arg, 1);
@@ -50,6 +63,8 @@ struct one_hot_impl : typed_primitive_impl_ocl<one_hot> {
     }
 };
 
+const object_type one_hot_impl::type = object_type::ONE_HOT_IMPL;
+
 namespace detail {
 
 attach_one_hot_impl::attach_one_hot_impl() {
@@ -72,3 +87,5 @@ attach_one_hot_impl::attach_one_hot_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::one_hot_impl)

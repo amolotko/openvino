@@ -9,6 +9,8 @@
 #include "quantize/quantize_kernel_selector.h"
 #include "quantize/quantize_kernel_ref.h"
 #include "cldnn/runtime/error_handler.hpp"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 
 using namespace cldnn;
 
@@ -18,10 +20,21 @@ namespace ocl {
 struct quantize_impl : typed_primitive_impl_ocl<quantize> {
     using parent = typed_primitive_impl_ocl<quantize>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<quantize_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 protected:
     kernel_arguments_data get_arguments(typed_primitive_inst<quantize>& instance, int32_t) const override {
@@ -91,6 +104,8 @@ public:
         return new quantize_impl(arg, best_kernels[0]);
     }
 };
+
+const object_type quantize_impl::type = object_type::QUANTIZE_IMPL;
 
 namespace detail {
 
@@ -168,3 +183,5 @@ attach_quantize_impl::attach_quantize_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::quantize_impl)

@@ -9,6 +9,8 @@
 #include "kernel_selector_helper.h"
 #include "detection_output/detection_output_kernel_selector.h"
 #include "detection_output/detection_output_kernel_ref.h"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 #include <vector>
 
 namespace cldnn {
@@ -17,10 +19,21 @@ namespace ocl {
 struct detection_output_impl : typed_primitive_impl_ocl<detection_output> {
     using parent = typed_primitive_impl_ocl<detection_output>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<detection_output_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 private:
     static void set_detection_output_specific_params(kernel_selector::detection_output_params::DedicatedParams& detectOutParams,
@@ -72,6 +85,8 @@ public:
     }
 };
 
+const object_type detection_output_impl::type = object_type::DETECTION_OUTPUT_IMPL;
+
 namespace detail {
 
 attach_detection_output_impl::attach_detection_output_impl() {
@@ -84,3 +99,5 @@ attach_detection_output_impl::attach_detection_output_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::detection_output_impl)

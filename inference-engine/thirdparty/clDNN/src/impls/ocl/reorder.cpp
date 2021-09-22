@@ -9,6 +9,8 @@
 #include "reorder/reorder_kernel_selector.h"
 #include "reorder/reorder_kernel_base.h"
 #include "cldnn/runtime/error_handler.hpp"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 
 namespace cldnn {
 namespace ocl {
@@ -16,6 +18,7 @@ namespace ocl {
 struct reorder_impl : typed_primitive_impl_ocl<reorder> {
     using parent = typed_primitive_impl_ocl<reorder>;
     using parent::parent;
+    static const object_type type;
 
     reorder_impl(const reorder_impl& other) : parent(other),
     _can_be_optimized(other._can_be_optimized),
@@ -37,6 +40,16 @@ struct reorder_impl : typed_primitive_impl_ocl<reorder> {
         _can_be_optimized = reorder_node.can_be_optimized();
         _has_mean = reorder_node.has_mean();
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 protected:
     bool optimized_out(reorder_inst& instance) const override {
@@ -133,6 +146,8 @@ private:
     bool _has_mean = false;
 };
 
+const object_type reorder_impl::type = object_type::REORDER_IMPL;
+
 namespace detail {
 
 attach_reorder_impl::attach_reorder_impl() {
@@ -142,3 +157,5 @@ attach_reorder_impl::attach_reorder_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::reorder_impl)

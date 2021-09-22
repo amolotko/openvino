@@ -11,6 +11,8 @@
 #include "reduce/reduce_kernel_b_fs_yx_fsv16.h"
 #include "cldnn/runtime/error_handler.hpp"
 #include "data_inst.h"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 
 using namespace cldnn;
 
@@ -52,10 +54,21 @@ kernel_selector::reduce_mode cldnn_2_reduce_mode(reduce_mode mode) {
 struct reduce_impl : typed_primitive_impl_ocl<reduce> {
     using parent = typed_primitive_impl_ocl<reduce>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<reduce_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 public:
     static primitive_impl* create(const reduce_node& arg) {
@@ -74,6 +87,8 @@ public:
         return new reduce_impl(arg, best_kernels[0]);
     }
 };
+
+const object_type reduce_impl::type = object_type::REDUCE_IMPL;
 
 namespace detail {
 
@@ -105,3 +120,5 @@ attach_reduce_impl::attach_reduce_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::reduce_impl)

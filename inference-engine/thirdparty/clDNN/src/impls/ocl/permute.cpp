@@ -9,6 +9,8 @@
 #include "kernel_selector_helper.h"
 #include "permute/permute_kernel_selector.h"
 #include "permute/permute_kernel_ref.h"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 
 using namespace cldnn;
 
@@ -18,10 +20,21 @@ namespace ocl {
 struct permute_impl : typed_primitive_impl_ocl<permute> {
     using parent = typed_primitive_impl_ocl<permute>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<permute_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
     static primitive_impl* create(const permute_node& arg) {
         auto permute_params = get_default_params<kernel_selector::permute_params>(arg);
@@ -42,6 +55,8 @@ struct permute_impl : typed_primitive_impl_ocl<permute> {
     }
 };
 
+const object_type permute_impl::type = object_type::PERMUTE_IMPL;
+
 namespace detail {
 
 attach_permute_impl::attach_permute_impl() {
@@ -51,3 +66,5 @@ attach_permute_impl::attach_permute_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::permute_impl)

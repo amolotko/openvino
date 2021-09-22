@@ -9,6 +9,8 @@
 #include "kernel_selector_helper.h"
 #include "normalize/normalize_kernel_selector.h"
 #include "normalize/normalize_kernel_base.h"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 
 #include <algorithm>
 
@@ -20,10 +22,21 @@ namespace ocl {
 struct normalize_impl : typed_primitive_impl_ocl<normalize> {
     using parent = typed_primitive_impl_ocl<normalize>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<normalize_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 protected:
      kernel_arguments_data get_arguments(typed_primitive_inst<normalize>& instance, int32_t split) const override {
@@ -57,6 +70,8 @@ public:
     }
 };
 
+const object_type normalize_impl::type = object_type::NORMALIZE_IMPL;
+
 namespace detail {
 
 attach_normalize_impl::attach_normalize_impl() {
@@ -79,3 +94,5 @@ attach_normalize_impl::attach_normalize_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::normalize_impl)

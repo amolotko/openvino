@@ -9,6 +9,8 @@
 #include "kernel_selector_helper.h"
 #include "concatenation/concatenation_kernel_selector.h"
 #include "concatenation/concatenation_kernel_base.h"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 
 #include <initializer_list>
 
@@ -39,6 +41,7 @@ kernel_selector::concat_axis convert_axis(concatenation::concatenation_axis axis
 struct concatenation_impl : typed_primitive_impl_ocl<concatenation> {
     using parent = typed_primitive_impl_ocl<concatenation>;
     using parent::parent;
+    static const object_type type;
 
     concatenation_impl(const concatenation_impl& other) : parent(other),
     _can_be_optimized(other._can_be_optimized) {}
@@ -66,6 +69,16 @@ struct concatenation_impl : typed_primitive_impl_ocl<concatenation> {
         const auto& concatenation_node = arg.as<concatenation>();
         _can_be_optimized = concatenation_node.can_be_optimized();
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 protected:
     bool optimized_out(concatenation_inst& instance) const override {
@@ -105,6 +118,8 @@ public:
 private:
     bool _can_be_optimized = false;
 };
+
+const object_type concatenation_impl::type = object_type::CONCATENATION_IMPL;
 
 namespace detail {
 
@@ -186,3 +201,5 @@ attach_concatenation_impl::attach_concatenation_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::concatenation_impl)

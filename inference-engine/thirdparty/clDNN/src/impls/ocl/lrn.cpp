@@ -9,6 +9,8 @@
 #include "kernel_selector_helper.h"
 #include "lrn/lrn_kernel_selector.h"
 #include "lrn/lrn_kernel_base.h"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 
 namespace cldnn {
 namespace ocl {
@@ -16,10 +18,21 @@ namespace ocl {
 struct lrn_impl : typed_primitive_impl_ocl<lrn> {
     using parent = typed_primitive_impl_ocl<lrn>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<lrn_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
     static primitive_impl* create(const lrn_node& arg) {
         auto lrn_params = get_default_params<kernel_selector::lrn_params>(arg);
@@ -47,6 +60,8 @@ struct lrn_impl : typed_primitive_impl_ocl<lrn> {
         return new lrn_impl(arg, best_kernels[0]);
     }
 };
+
+const object_type lrn_impl::type = object_type::LRN_IMPL;
 
 namespace detail {
 
@@ -97,3 +112,5 @@ attach_lrn_impl::attach_lrn_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::lrn_impl)

@@ -6,7 +6,6 @@
 #include "buffer.hpp"
 #include "helpers.hpp"
 #include "bind.hpp"
-#include "test_engine.hpp"
 
 namespace cldnn {
 class BinaryOutputBuffer : public OutputBuffer<BinaryOutputBuffer> {
@@ -19,13 +18,14 @@ public:
             throw std::runtime_error("Failed to write " + std::to_string(size) + " bytes to stream! Wrote " + std::to_string(written_size));
         }
     }
+
 private:
     std::ostream& stream;
 };
 
 class BinaryInputBuffer : public InputBuffer<BinaryInputBuffer> {
 public:
-    BinaryInputBuffer(std::istream& stream, Engine& engine) : InputBuffer(this, engine), stream(stream) {}
+    BinaryInputBuffer(std::istream& stream, engine& engine) : InputBuffer(this, engine), stream(stream) {}
 
     void read(void* const data, std::streamsize size) {
         auto const read_size = stream.rdbuf()->sgetn(reinterpret_cast<char*>(data), size);
@@ -33,6 +33,7 @@ public:
             throw std::runtime_error("Failed to read " + std::to_string(size) + " bytes from stream! Read " + std::to_string(read_size));
         }
     }
+
 private:
     std::istream& stream;
 };

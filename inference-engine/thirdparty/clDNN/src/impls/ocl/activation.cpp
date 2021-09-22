@@ -5,10 +5,12 @@
 #include "activation_inst.h"
 #include "primitive_base.hpp"
 #include "impls/implementation_map.hpp"
+#include "object_types.hpp"
 #include "cldnn/runtime/error_handler.hpp"
 #include "kernel_selector_helper.h"
 #include "activation/activation_kernel_selector.h"
 #include "activation/activation_kernel_base.h"
+#include "serialization/binary_buffer.hpp"
 
 namespace cldnn {
 namespace ocl {
@@ -16,6 +18,7 @@ namespace ocl {
 struct activation_impl : typed_primitive_impl_ocl<activation> {
     using parent = typed_primitive_impl_ocl<activation>;
     using parent::parent;
+    static const object_type type;
 
     activation_impl(const activation_impl& other) : parent(other), _is_parameterized(other._is_parameterized) {}
 
@@ -24,6 +27,10 @@ struct activation_impl : typed_primitive_impl_ocl<activation> {
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<activation_impl>(*this);
+    }
+
+    object_type get_type() const override {
+        return type;
     }
 
     void align_state(const program_node& arg) override {
@@ -42,6 +49,16 @@ struct activation_impl : typed_primitive_impl_ocl<activation> {
         }
 
         return args;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {
+        std::cout << "+++ ACTIVATION SAVE +++" << std::endl;
+    }
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {
+        std::cout << "+++ ACTIVATION LOAD +++" << std::endl;
     }
 
     static primitive_impl* create(const activation_node& arg) {
@@ -81,6 +98,8 @@ struct activation_impl : typed_primitive_impl_ocl<activation> {
 private:
     bool _is_parameterized = false;
 };
+
+const object_type activation_impl::type = object_type::ACTIVATION_IMPL;
 
 namespace detail {
 
@@ -151,3 +170,4 @@ attach_activation_impl::attach_activation_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::activation_impl)

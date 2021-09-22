@@ -16,6 +16,8 @@
 
 #include "cldnn/primitives/reorder.hpp"
 #include "cldnn/primitives/input_layout.hpp"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 #include <memory>
 
 namespace cldnn {
@@ -24,10 +26,21 @@ namespace ocl {
 struct fully_connected_impl : typed_primitive_impl_ocl<fully_connected> {
     using parent = typed_primitive_impl_ocl<fully_connected>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<fully_connected_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 protected:
     kernel_arguments_data get_arguments(typed_primitive_inst<fully_connected>& instance, int32_t split) const override {
@@ -74,6 +87,8 @@ public:
     }
 };
 
+const object_type fully_connected_impl::type = object_type::FULLY_CONNECTED_IMPL;
+
 namespace detail {
 
 attach_fully_connected_impl::attach_fully_connected_impl() {
@@ -102,3 +117,5 @@ attach_fully_connected_impl::attach_fully_connected_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::fully_connected_impl)

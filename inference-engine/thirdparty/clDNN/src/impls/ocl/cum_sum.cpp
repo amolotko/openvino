@@ -9,6 +9,8 @@
 #include "cum_sum/cum_sum_kernel_selector.h"
 #include "cum_sum/cum_sum_kernel_ref.h"
 #include "cldnn/runtime/error_handler.hpp"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 
 using namespace cldnn;
 
@@ -39,10 +41,21 @@ kernel_selector::cum_sum_axis convert_axis(cum_sum::cum_sum_axis axis) {
 struct cum_sum_impl : typed_primitive_impl_ocl<cum_sum> {
     using parent = typed_primitive_impl_ocl<cum_sum>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<cum_sum_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 public:
     static primitive_impl* create(const cum_sum_node& arg) {
@@ -66,6 +79,8 @@ public:
     }
 };
 
+const object_type cum_sum_impl::type = object_type::CUM_SUM_IMPL;
+
 namespace detail {
 
 attach_cum_sum_impl::attach_cum_sum_impl() {
@@ -82,3 +97,5 @@ attach_cum_sum_impl::attach_cum_sum_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::cum_sum_impl)

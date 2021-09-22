@@ -9,6 +9,8 @@
 #include "kernel_selector_helper.h"
 #include "ctc_greedy_decoder/ctc_greedy_decoder_kernel_selector.h"
 #include "ctc_greedy_decoder/ctc_greedy_decoder_kernel_base.h"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 
 #include <algorithm>
 
@@ -20,10 +22,21 @@ namespace ocl {
 struct ctc_greedy_decoder_impl : typed_primitive_impl_ocl<ctc_greedy_decoder> {
     using parent = typed_primitive_impl_ocl<ctc_greedy_decoder>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<ctc_greedy_decoder_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 public:
     static primitive_impl* create(const ctc_greedy_decoder_node& arg) {
@@ -55,6 +68,8 @@ public:
     }
 };
 
+const object_type ctc_greedy_decoder_impl::type = object_type::CTC_GREEDY_DECODER_IMPL;
+
 namespace detail {
 
 attach_ctc_greedy_decoder_impl::attach_ctc_greedy_decoder_impl() {
@@ -69,3 +84,5 @@ attach_ctc_greedy_decoder_impl::attach_ctc_greedy_decoder_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::ctc_greedy_decoder_impl)

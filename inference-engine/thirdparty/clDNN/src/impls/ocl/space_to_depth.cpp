@@ -9,6 +9,8 @@
 #include "space_to_depth/space_to_depth_kernel_selector.h"
 #include "space_to_depth/space_to_depth_kernel_ref.h"
 #include "cldnn/runtime/error_handler.hpp"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 
 using namespace cldnn;
 
@@ -17,10 +19,21 @@ namespace ocl {
 struct space_to_depth_impl : typed_primitive_impl_ocl<space_to_depth> {
     using parent = typed_primitive_impl_ocl<space_to_depth>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<space_to_depth_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 public:
     static primitive_impl* create(const space_to_depth_node& arg) {
@@ -45,6 +58,8 @@ public:
         return new space_to_depth_impl(arg, best_kernels[0]);
     }
 };
+
+const object_type space_to_depth_impl::type = object_type::SPACE_TO_DEPTH_IMPL;
 
 namespace detail {
 
@@ -72,3 +87,5 @@ attach_space_to_depth_impl::attach_space_to_depth_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::space_to_depth_impl)

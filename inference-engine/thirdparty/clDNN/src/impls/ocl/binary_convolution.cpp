@@ -12,6 +12,8 @@
 #include "kernel_runner.h"
 #include "kernel_selector/core/actual_kernels/binary_convolution/binary_convolution_kernel_selector.h"
 #include "kernel_selector/core/actual_kernels/binary_convolution/binary_convolution_params.h"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 #include <algorithm>
 #include <memory>
 
@@ -21,6 +23,7 @@ namespace ocl {
 struct binary_convolution_impl : typed_primitive_impl_ocl<binary_convolution> {
     using parent = typed_primitive_impl_ocl<binary_convolution>;
     using parent::parent;
+    static const object_type type;
 
     binary_convolution_impl(const binary_convolution_impl& other) : parent(other),
     _id(other._id),
@@ -42,6 +45,16 @@ struct binary_convolution_impl : typed_primitive_impl_ocl<binary_convolution> {
         _id = binary_convolution_node.id();
         _split = binary_convolution_node.get_split();
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 protected:
     bool validate_impl(const typed_primitive_inst<binary_convolution>& instance) const override {
@@ -149,6 +162,8 @@ private:
     int32_t _split = 1;
 };
 
+const object_type binary_convolution_impl::type = object_type::BINARY_CONVOLUTION_IMPL;
+
 namespace detail {
 
 attach_binary_convolution_impl::attach_binary_convolution_impl() {
@@ -160,3 +175,5 @@ attach_binary_convolution_impl::attach_binary_convolution_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::binary_convolution_impl);

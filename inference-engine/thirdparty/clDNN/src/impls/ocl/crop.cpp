@@ -9,6 +9,8 @@
 #include "eltwise/eltwise_kernel_selector.h"
 #include "eltwise/eltwise_kernel_base.h"
 #include "cldnn/runtime/error_handler.hpp"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 
 namespace cldnn {
 namespace ocl {
@@ -16,6 +18,7 @@ namespace ocl {
 struct crop_impl : typed_primitive_impl_ocl<crop> {
     using parent = typed_primitive_impl_ocl<crop>;
     using parent::parent;
+    static const object_type type;
 
     crop_impl(const crop_impl& other) : parent(other),
     _can_be_optimized(other._can_be_optimized) {}
@@ -34,6 +37,16 @@ struct crop_impl : typed_primitive_impl_ocl<crop> {
         const auto& crop_node = arg.as<crop>();
         _can_be_optimized = crop_node.can_be_optimized();
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 protected:
     bool optimized_out(crop_inst& instance) const override {
@@ -66,6 +79,8 @@ public:
 private:
     bool _can_be_optimized = false;
 };
+
+const object_type crop_impl::type = object_type::CROP_IMPL;
 
 namespace detail {
 
@@ -131,3 +146,5 @@ attach_crop_impl::attach_crop_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::crop_impl)

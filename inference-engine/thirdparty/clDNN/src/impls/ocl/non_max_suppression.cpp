@@ -9,6 +9,8 @@
 #include "kernel_selector_helper.h"
 #include "non_max_suppression/non_max_suppression_kernel_selector.h"
 #include "non_max_suppression/non_max_suppression_kernel_ref.h"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 
 
 namespace cldnn {
@@ -16,10 +18,21 @@ namespace ocl {
 struct non_max_suppression_impl : typed_primitive_impl_ocl<non_max_suppression> {
     using parent = typed_primitive_impl_ocl<non_max_suppression>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<non_max_suppression_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 protected:
     kernel_arguments_data get_arguments(typed_primitive_inst<non_max_suppression>& instance, int32_t) const override {
@@ -166,6 +179,8 @@ private:
     }
 };
 
+const object_type non_max_suppression_impl::type = object_type::NON_MAX_SUPPRESSION_IMPL;
+
 namespace detail {
 
 attach_non_max_suppression_impl::attach_non_max_suppression_impl() {
@@ -179,3 +194,5 @@ attach_non_max_suppression_impl::attach_non_max_suppression_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::non_max_suppression_impl)

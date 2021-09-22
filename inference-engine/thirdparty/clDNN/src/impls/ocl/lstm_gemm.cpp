@@ -11,6 +11,8 @@
 #include "lstm/lstm_gemm_kernel_selector.h"
 #include "lstm/lstm_gemm_kernel_base.h"
 #include "cldnn/runtime/error_handler.hpp"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 
 namespace cldnn {
 namespace ocl {
@@ -18,10 +20,21 @@ namespace ocl {
 struct lstm_gemm_impl : typed_primitive_impl_ocl<lstm_gemm> {
     using parent = typed_primitive_impl_ocl<lstm_gemm>;
     using parent::parent;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<lstm_gemm_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {}
 
 protected:
     kernel_arguments_data get_arguments(typed_primitive_inst<lstm_gemm>& instance, int32_t) const override {
@@ -85,6 +98,8 @@ public:
     }
 };
 
+const object_type lstm_gemm_impl::type = object_type::LSTM_GEMM_IMPL;
+
 namespace detail {
 
 attach_lstm_gemm_impl::attach_lstm_gemm_impl() {
@@ -99,3 +114,5 @@ attach_lstm_gemm_impl::attach_lstm_gemm_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::lstm_gemm_impl)
