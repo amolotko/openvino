@@ -58,20 +58,17 @@ static std::unordered_map<cldnn::primitive_id, std::vector<onednn_post_op_desc>>
 
 template <class PType, class DescType, class PrimDescType = dnnl::primitive_desc, class PrimType = dnnl::primitive>
 struct typed_primitive_onednn_impl : public typed_primitive_impl<PType> {
-    const typed_program_node<PType>& _outer;
     std::shared_ptr<DescType> _desc;
     std::shared_ptr<dnnl::primitive_attr> _attrs;
     PrimDescType _pd;
     PrimType _prim;
     std::unordered_map<uint32_t, std::unordered_map<int, dnnl::memory>> _args;
 
-    typed_primitive_onednn_impl(const typed_program_node<PType>& arg,
-                                std::shared_ptr<DescType> desc,
+    typed_primitive_onednn_impl(std::shared_ptr<DescType> desc,
                                 std::shared_ptr<dnnl::primitive_attr> attrs,
                                 const PrimDescType& pd,
                                 kernel_selector::WeightsReorderParams weights_reorder = {})
         : typed_primitive_impl<PType>(weights_reorder, pd.impl_info_str()),
-          _outer(arg),
           _desc(desc),
           _attrs(attrs),
           _pd(pd),
@@ -574,7 +571,7 @@ protected:
         return args;
     }
 
-    void init_kernels() override { }
+    void init_kernels(const program_node&) override { }
 
     static std::shared_ptr<dnnl::primitive_attr> get_primitive_attributes(const typed_program_node<PType>& arg) {
         const std::vector<fused_primitive_desc>& cldnn_post_ops = arg.get_fused_primitives();
