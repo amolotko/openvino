@@ -329,6 +329,7 @@ void kernels_cache::build_batch(const engine& build_engine, const batch_program&
                 // compile time.
                 saveBinaryToFile(cached_bin_name, getProgramBinaries(program));
             }
+            compiled_kernels.push_back(getProgramBinaries(program));
         } else {
             cl::Program program(cl_build_engine.get_cl_context(), {cl_build_engine.get_cl_device()}, precompiled_kernels);
             program.build(cl_build_engine.get_cl_device(), batch.options.c_str());

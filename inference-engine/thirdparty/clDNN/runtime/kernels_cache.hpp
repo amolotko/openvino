@@ -71,6 +71,8 @@ public:
     using kernels_code = std::set<kernel_code, cmp_kernel_code>;
 
 private:
+    std::vector<std::vector<unsigned char>> compiled_kernels;
+
     static std::mutex _mutex;
     engine& _engine;
     kernels_code _kernels_code;

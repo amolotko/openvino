@@ -53,11 +53,13 @@ struct activation_impl : typed_primitive_impl_ocl<activation> {
 
     template <typename BufferType>
     void save(BufferType& buffer) const {
+        parent::save(buffer);
         std::cout << "+++ ACTIVATION SAVE +++" << std::endl;
     }
 
     template <typename BufferType>
     void load(BufferType& buffer) {
+        parent::load(buffer);
         std::cout << "+++ ACTIVATION LOAD +++" << std::endl;
     }
 

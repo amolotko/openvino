@@ -12,6 +12,9 @@
 #include "kernel_selector_helper.h"
 #include "cldnn/graph/network.hpp"
 #include "register.hpp"
+#include "serialization/vector_serializer.hpp"
+#include "serialization/string_serializer.hpp"
+#include "serialization/helpers.hpp"
 #include <vector>
 #include <list>
 #include <utility>
@@ -66,6 +69,18 @@ struct typed_primitive_impl_ocl : public typed_primitive_impl<PType> {
     bool is_cpu() const override { return false; }
 
 protected:
+    template <typename BufferType>
+    void save(BufferType& buffer) const {
+        buffer << make_data(&_kernel_data.internalBufferDataType, sizeof(kernel_selector::Datatype));
+        buffer << _kernel_data.internalBufferSizes;
+        buffer << _kernel_data.kernels;
+        buffer << _kernel_ids;
+    }
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {
+    }
+
     virtual bool optimized_out(typed_primitive_inst<PType>&) const { return false; }
 
     virtual kernel_arguments_data get_arguments(typed_primitive_inst<PType>& instance, int32_t /*split*/) const {
