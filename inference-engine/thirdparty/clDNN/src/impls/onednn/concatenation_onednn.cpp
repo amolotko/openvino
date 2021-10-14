@@ -77,7 +77,7 @@ public:
 
         std::shared_ptr<void> dummy = nullptr;
 
-        return new concatenation_onednn(arg, dummy, attr, *desc);
+        return new concatenation_onednn(dummy, attr, *desc);
     }
 };
 

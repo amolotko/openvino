@@ -74,7 +74,7 @@ public:
         auto attr = get_primitive_attributes(arg);
         dnnl::primitive_desc prim_desc{&desc->data, attr.get(), engine.get_onednn_engine(), nullptr};
 
-        return new pooling_onednn(arg, desc, attr, prim_desc);
+        return new pooling_onednn(desc, attr, prim_desc);
     }
 };
 
