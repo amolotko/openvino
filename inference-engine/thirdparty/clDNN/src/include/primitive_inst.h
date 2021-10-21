@@ -15,6 +15,7 @@
 #include "program_node.h"
 #include "primitive_type.h"
 #include "object_types.hpp"
+#include "serialization/polymorphic_serializer.hpp"
 
 #include <memory>
 #include <vector>
@@ -158,6 +159,16 @@ public:
     void allocate_internal_buffers();
 
     std::vector<memory::cptr> get_intermediates_memories() const { return _intermediates_memory; }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {
+        buffer << _impl;
+    }
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {
+        buffer >> _impl;
+    }
 
 protected:
     primitive_inst(network& network, program_node const& node, bool allocate_memory);

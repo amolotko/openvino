@@ -11,6 +11,7 @@
 #include "cldnn/runtime/engine.hpp"
 #include "cldnn/runtime/event.hpp"
 #include "cldnn/runtime/stream.hpp"
+#include "serialization/binary_buffer.hpp"
 
 #include <map>
 #include <vector>
@@ -181,6 +182,13 @@ public:
                                     std::set<primitive_id> dependencies,
                                     allocation_type type,
                                     bool reusable = true);
+
+    // template <typename BufferType>
+    void save(BinaryOutputBuffer& buffer) const;
+
+    // template <typename BufferType>
+    void load(BinaryInputBuffer& buffer) {
+    }
 
 private:
     using output_chains_map = std::map<primitive_id, std::vector<std::shared_ptr<primitive_inst>>>;

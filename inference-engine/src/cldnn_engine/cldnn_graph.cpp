@@ -34,6 +34,7 @@
 #include <ngraph/variant.hpp>
 #include <ngraph/ngraph.hpp>
 #include "cldnn_itt.h"
+#include "serialization/binary_buffer.hpp"
 
 using namespace InferenceEngine;
 using namespace InferenceEngine::details;
@@ -82,6 +83,14 @@ void CLDNNGraph::Build() {
     } else {
         auto network = BuildNetwork(m_program->GetCompiledProgram());
         m_networks.emplace_back(network);
+    }
+
+    {
+        std::ofstream ofs("archive.bin", std::ios::binary);
+        cldnn::BinaryOutputBuffer ob(ofs);
+        for (const auto& network : m_networks) {
+            ob << *network;
+        }
     }
 
     UpdateImplementationsMap();

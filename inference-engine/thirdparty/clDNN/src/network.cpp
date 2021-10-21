@@ -266,6 +266,12 @@ network::ptr network::build_network(engine& engine,
     return std::make_shared<network>(engine, nodes, options, is_internal);
 }
 
+void network::save(BinaryOutputBuffer& buffer) const {
+    for (const auto& p_inst : _exec_order) {
+        buffer << *p_inst;
+    }
+}
+
 void network::validate_primitives() {
     for (auto const& prim : _exec_order) {
         bool valid = prim->validate();
