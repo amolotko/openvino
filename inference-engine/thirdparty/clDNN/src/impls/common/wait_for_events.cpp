@@ -8,20 +8,36 @@
 #include "input_layout_inst.h"
 #include "impls/implementation_map.hpp"
 #include "register.hpp"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 #include <vector>
 
 namespace cldnn {
 namespace common {
 
 class wait_for_events_impl : public primitive_impl {
+    using primitive_impl::primitive_impl;
+
 public:
+    static const object_type type;
+
     explicit wait_for_events_impl(const program_node& /*node*/) {}
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<wait_for_events_impl>(*this);
     }
 
-    void init_kernels(const program_node&) override {}
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {}
+
+    template <typename BufferType>
+    void load(BufferType& buffer) const {}
+
+    void init_kernels(const kernels_cache&) override {}
     void set_arguments(primitive_inst& /*instance*/) override {}
     std::vector<layout> get_internal_buffer_layouts() const override { return {}; }
 
@@ -44,6 +60,8 @@ public:
     }
 };
 
+const object_type wait_for_events_impl::type = object_type::WAIT_FOR_EVENTS_IMPL;
+
 namespace detail {
 
 attach_data_common::attach_data_common() {
@@ -61,3 +79,4 @@ attach_prior_box_common::attach_prior_box_common() {
 }  // namespace detail
 }  // namespace common
 }  // namespace cldnn
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::common::wait_for_events_impl)

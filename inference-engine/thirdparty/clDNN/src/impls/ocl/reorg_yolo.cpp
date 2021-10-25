@@ -29,10 +29,14 @@ struct reorg_yolo_impl : typed_primitive_impl_ocl<reorg_yolo> {
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+    }
 
     static primitive_impl* create(const reorg_yolo_node& arg) {
         auto ry_params = get_default_params<kernel_selector::reorg_yolo_params>(arg);

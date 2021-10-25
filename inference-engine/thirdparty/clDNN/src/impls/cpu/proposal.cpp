@@ -423,7 +423,7 @@ struct proposal_impl : typed_primitive_impl<proposal> {
         return ev;
     }
 
-    void init_kernels(const program_node&) override {}
+    void init_kernels(const kernels_cache&) override {}
 
     static primitive_impl* create(const proposal_node& arg) {
         const layout& l = arg.image_info().get_output_layout();

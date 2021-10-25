@@ -32,10 +32,14 @@ struct space_to_batch_impl : typed_primitive_impl_ocl<space_to_batch> {
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+    }
 
 public:
     static primitive_impl* create(const space_to_batch_node& arg) {

@@ -30,10 +30,14 @@ struct reverse_sequence_impl : typed_primitive_impl_ocl<reverse_sequence> {
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+    }
 
 public:
     static primitive_impl* create(const reverse_sequence_node& arg) {

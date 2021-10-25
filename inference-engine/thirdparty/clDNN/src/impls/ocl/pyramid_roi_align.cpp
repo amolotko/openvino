@@ -31,10 +31,14 @@ struct pyramid_roi_align_impl : typed_primitive_impl_ocl<pyramid_roi_align> {
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+    }
 
     static primitive_impl* create(const pyramid_roi_align_node& arg) {
         auto prim = arg.get_primitive();

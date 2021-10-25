@@ -26,6 +26,7 @@
 #include "loop_inst.h"
 #include "kernel_selector_helper.h"
 #include "runtime/cldnn_itt.hpp"
+#include "runtime/kernels_cache.hpp"
 
 #include <algorithm>
 #include <string>
@@ -35,6 +36,7 @@
 #include <set>
 #include <utility>
 #include <map>
+#include <fstream>
 
 #ifdef GPU_DEBUG_CONFIG
 #include <iomanip>
@@ -225,7 +227,26 @@ network::network(engine& engine,
                  const topology& topo,
                  const build_options& options,
                  bool is_internal)
-    : network(program::build_program(engine, topo, options, is_internal), engine.create_stream(), is_internal) {}
+    : network(program::build_program(engine, topo, options, is_internal), engine.create_stream(), is_internal) {
+        {
+            std::ofstream ofs("archive.bin", std::ios::binary);
+            cldnn::BinaryOutputBuffer ob(ofs);
+            ob << _program->get_kernels_cache();
+            for (const auto& p_inst : _exec_order) {
+                ob << *p_inst;
+            }
+        }
+        {
+            std::ifstream ifs("archive.bin", std::ios::binary);
+            cldnn::BinaryInputBuffer ib(ifs, get_engine());
+            kernels_cache kernels_cache(get_engine());
+            ib >> kernels_cache;
+            for (const auto& p_inst : _exec_order) {
+                ib >> *p_inst;
+                p_inst->init_kernels(kernels_cache);
+            }
+        }
+    }
 
 network::network(engine& engine,
                  const std::set<std::shared_ptr<program_node>>& nodes,
@@ -266,11 +287,21 @@ network::ptr network::build_network(engine& engine,
     return std::make_shared<network>(engine, nodes, options, is_internal);
 }
 
-void network::save(BinaryOutputBuffer& buffer) const {
-    for (const auto& p_inst : _exec_order) {
-        buffer << *p_inst;
-    }
-}
+// void network::save(BinaryOutputBuffer& buffer) const {
+//     buffer << _program->get_kernels_cache();
+//     for (const auto& p_inst : _exec_order) {
+//         buffer << *p_inst;
+//     }
+// }
+
+// void network::load(BinaryInputBuffer& buffer) {
+//     kernels_cache kernels_cache(get_engine());
+//     buffer >> kernels_cache;
+//     for (const auto& p_inst : _exec_order) {
+//         buffer >> *p_inst;
+//         p_inst->init_kernels(kernels_cache);
+//     }
+// }
 
 void network::validate_primitives() {
     for (auto const& prim : _exec_order) {

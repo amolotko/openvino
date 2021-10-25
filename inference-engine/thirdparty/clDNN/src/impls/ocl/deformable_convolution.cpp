@@ -48,10 +48,16 @@ struct deformable_conv_impl : typed_primitive_impl_ocl<deformable_conv> {
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+        buffer(_split, _groups);
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+        buffer(_split, _groups);
+    }
 
 protected:
     kernel_arguments_data get_arguments(typed_primitive_inst<deformable_conv>& instance, int32_t split) const override {

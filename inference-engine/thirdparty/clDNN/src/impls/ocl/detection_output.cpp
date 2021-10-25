@@ -30,10 +30,14 @@ struct detection_output_impl : typed_primitive_impl_ocl<detection_output> {
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+    }
 
 private:
     static void set_detection_output_specific_params(kernel_selector::detection_output_params::DedicatedParams& detectOutParams,

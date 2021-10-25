@@ -31,10 +31,14 @@ struct one_hot_impl : typed_primitive_impl_ocl<one_hot> {
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+    }
 
     static primitive_impl* create(const one_hot_node& arg) {
         auto oh_params = get_default_params<kernel_selector::one_hot_params>(arg, 1);

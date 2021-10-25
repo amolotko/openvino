@@ -69,6 +69,7 @@ enum class object_type {
     SPACE_TO_DEPTH_IMPL,
     STRIDED_SLICE_IMPL,
     TILE_IMPL,
+    WAIT_FOR_EVENTS_IMPL,
     NONE
 };
 

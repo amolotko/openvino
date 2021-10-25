@@ -16,6 +16,7 @@
 #include "primitive_type.h"
 #include "object_types.hpp"
 #include "serialization/polymorphic_serializer.hpp"
+#include "runtime/kernels_cache.hpp"
 
 #include <memory>
 #include <vector>
@@ -61,7 +62,7 @@ struct primitive_impl {
     kernel_selector::weights_reorder_params _weights_reorder_params;
     // class typed_primitive_gpu_impl override this with return false;
     virtual bool is_cpu() const { return true; }
-    virtual void init_kernels(const program_node&) = 0;
+    virtual void init_kernels(const kernels_cache&) = 0;
     virtual std::unique_ptr<primitive_impl> clone() const = 0;
 
 protected:
@@ -119,7 +120,10 @@ public:
     }
 
     event::ptr execute(const std::vector<event::ptr>& events);
-    void init_kernels();
+    // void init_kernels();
+    void init_kernels(const kernels_cache& kernels_cache) {
+        _impl->init_kernels(kernels_cache);
+    }
     void set_arguments();
 
     bool validate() const {
@@ -167,6 +171,7 @@ public:
 
     template <typename BufferType>
     void load(BufferType& buffer) {
+        _impl.release();
         buffer >> _impl;
     }
 

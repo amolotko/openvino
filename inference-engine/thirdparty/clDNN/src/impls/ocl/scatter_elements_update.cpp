@@ -50,10 +50,14 @@ struct scatter_elements_update_impl : typed_primitive_impl_ocl<scatter_elements_
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+    }
 
 public:
     static primitive_impl* create(const scatter_elements_update_node& arg) {

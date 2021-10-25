@@ -56,10 +56,16 @@ struct convolution_impl : typed_primitive_impl_ocl<convolution> {
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+        buffer(_id, _split, _groups, _depthwise_sep_opt);
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+        buffer(_id, _split, _groups, _depthwise_sep_opt);
+    }
 
 protected:
     bool validate_impl(const typed_primitive_inst<convolution>& instance) const override {

@@ -571,7 +571,7 @@ protected:
         return args;
     }
 
-    void init_kernels(const program_node&) override { }
+    void init_kernels(const kernels_cache&) override { }
 
     static std::shared_ptr<dnnl::primitive_attr> get_primitive_attributes(const typed_program_node<PType>& arg) {
         const std::vector<fused_primitive_desc>& cldnn_post_ops = arg.get_fused_primitives();

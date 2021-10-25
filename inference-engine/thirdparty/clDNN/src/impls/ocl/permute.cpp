@@ -31,10 +31,14 @@ struct permute_impl : typed_primitive_impl_ocl<permute> {
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+    }
 
     static primitive_impl* create(const permute_node& arg) {
         auto permute_params = get_default_params<kernel_selector::permute_params>(arg);

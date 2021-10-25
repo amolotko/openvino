@@ -30,10 +30,16 @@ struct arg_max_min_impl : typed_primitive_impl_ocl<arg_max_min> {
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+        std::cout << "+++ ARG_MAX_MIN SAVE +++" << std::endl;
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+        std::cout << "+++ ARG_MAX_MIN LOAD +++" << std::endl;
+    }
 
 protected:
     kernel_arguments_data get_arguments(typed_primitive_inst<arg_max_min>& instance, int32_t) const override {

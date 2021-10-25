@@ -85,13 +85,20 @@ void CLDNNGraph::Build() {
         m_networks.emplace_back(network);
     }
 
-    {
-        std::ofstream ofs("archive.bin", std::ios::binary);
-        cldnn::BinaryOutputBuffer ob(ofs);
-        for (const auto& network : m_networks) {
-            ob << *network;
-        }
-    }
+    // {
+    //     std::ofstream ofs("archive.bin", std::ios::binary);
+    //     cldnn::BinaryOutputBuffer ob(ofs);
+    //     for (const auto& network : m_networks) {
+    //         ob << *network;
+    //     }
+    // }
+    // {
+    //     std::ifstream ifs("archive.bin", std::ios::binary);
+    //     cldnn::BinaryInputBuffer ib(ifs, *GetEngine());
+    //     for (auto& network : m_networks) {
+    //         ib >> *network;
+    //     }
+    // }
 
     UpdateImplementationsMap();
 

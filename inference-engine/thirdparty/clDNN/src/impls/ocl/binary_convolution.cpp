@@ -51,10 +51,18 @@ struct binary_convolution_impl : typed_primitive_impl_ocl<binary_convolution> {
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+        buffer(_id, _split);
+        std::cout << "+++ BINARY_CONVOLUTION SAVE +++" << std::endl;
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+        buffer(_id, _split);
+        std::cout << "+++ BINARY_CONVOLUTION LOAD +++" << std::endl;
+    }
 
 protected:
     bool validate_impl(const typed_primitive_inst<binary_convolution>& instance) const override {

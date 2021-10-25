@@ -53,10 +53,16 @@ struct deconvolution_impl : typed_primitive_impl_ocl<deconvolution> {
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+        buffer(_id, _filling_value, _split, _groups);
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+        buffer(_id, _filling_value, _split, _groups);
+    }
 
 protected:
     // TODO: share it with convolution and fully connected

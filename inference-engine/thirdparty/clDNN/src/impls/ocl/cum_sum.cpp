@@ -52,10 +52,14 @@ struct cum_sum_impl : typed_primitive_impl_ocl<cum_sum> {
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+    }
 
 public:
     static primitive_impl* create(const cum_sum_node& arg) {

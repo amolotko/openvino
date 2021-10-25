@@ -30,10 +30,14 @@ struct gather_nd_impl : typed_primitive_impl_ocl<gather_nd> {
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+    }
 
     static primitive_impl* create(const gather_nd_node& arg) {
         auto gather_nd_params = get_default_params<kernel_selector::gather_nd_params>(arg);

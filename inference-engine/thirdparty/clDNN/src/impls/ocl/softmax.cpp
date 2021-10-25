@@ -29,10 +29,14 @@ struct softmax_impl : typed_primitive_impl_ocl<softmax> {
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+    }
 
     static primitive_impl* create(const softmax_node& arg) {
         auto sm_params = get_default_params<kernel_selector::softmax_params>(arg);

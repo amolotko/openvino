@@ -83,7 +83,7 @@ public:
 };
 
 template <typename BufferType, typename T>
-class Serializer<BufferType, T, typename std::enable_if<std::is_base_of<InputBuffer<BufferType>, BufferType>::value &&
+class Serializer<BufferType, std::vector<T>, typename std::enable_if<std::is_base_of<InputBuffer<BufferType>, BufferType>::value &&
                                                         std::is_same<kernel_selector::clKernelData, T>::value>::type> {
 public:
     static void load(BufferType& buffer, std::vector<T>& vector) {

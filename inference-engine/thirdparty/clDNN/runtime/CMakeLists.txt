@@ -36,6 +36,9 @@ source_group("${__CLDNN_Label__main}"             FILES ${__CLDNN_Sources__main}
 
 include_directories(
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../src/include/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../kernel_selector/core"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../kernel_selector/common"
     "${__CLDNN_Directory__main}"
     $<TARGET_PROPERTY:inference_engine_plugin_api,INTERFACE_INCLUDE_DIRECTORIES>
   )

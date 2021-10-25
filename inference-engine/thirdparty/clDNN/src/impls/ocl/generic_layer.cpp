@@ -32,8 +32,8 @@ struct generic_layer_impl : typed_primitive_impl<generic_layer> {
         _kernel_id = arg.get_program().add_kernel(_cl_kernel_data.code.kernelString);
     }
 
-    void init_kernels(const program_node& node) override {
-        _kernels.push_back(std::move(node.get_program().get_kernel(_kernel_id)));
+    void init_kernels(const kernels_cache& kernels_cache) override {
+        _kernels.push_back(std::move(kernels_cache.get_kernel(_kernel_id)));
     }
 
     void set_arguments_impl(generic_layer_inst& instance) override {
@@ -103,7 +103,7 @@ struct generic_layer_cpu : typed_primitive_impl<generic_layer> {
         return ev;
     }
 
-    void init_kernels(const program_node&) override {}
+    void init_kernels(const kernels_cache&) override {}
 };
 
 static primitive_impl* create(const generic_layer_node& arg) {

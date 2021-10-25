@@ -46,10 +46,16 @@ struct reorder_impl : typed_primitive_impl_ocl<reorder> {
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+        buffer(_can_be_optimized, _has_mean);
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+        buffer(_can_be_optimized, _has_mean);
+    }
 
 protected:
     bool optimized_out(reorder_inst& instance) const override {

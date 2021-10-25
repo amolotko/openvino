@@ -29,10 +29,16 @@ struct average_unpooling_impl : typed_primitive_impl_ocl<average_unpooling> {
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+        std::cout << "+++ AVERAGE_UNPOOLING SAVE +++" << std::endl;
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+        std::cout << "+++ AVERAGE_UNPOOLING LOAD +++" << std::endl;
+    }
 
 protected:
     kernel_arguments_data get_arguments(typed_primitive_inst<average_unpooling>& instance, int32_t split) const override {

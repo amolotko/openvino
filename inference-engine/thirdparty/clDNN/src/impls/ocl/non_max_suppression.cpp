@@ -29,10 +29,14 @@ struct non_max_suppression_impl : typed_primitive_impl_ocl<non_max_suppression> 
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+    }
 
 protected:
     kernel_arguments_data get_arguments(typed_primitive_inst<non_max_suppression>& instance, int32_t) const override {

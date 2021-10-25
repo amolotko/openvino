@@ -31,7 +31,7 @@ public:
         return make_unique<loop_impl>(*this);
     }
 
-    void init_kernels(const program_node&) override {}
+    void init_kernels(const kernels_cache&) override {}
 
     loop_impl(const loop_impl& other) : typed_primitive_impl<loop>(other),
     _is_current_iteration_used(other._is_current_iteration_used),

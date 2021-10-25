@@ -79,6 +79,8 @@ protected:
 
     template <typename BufferType>
     void load(BufferType& buffer) {
+        buffer >> make_data(&_kernel_data.internalBufferDataType, sizeof(kernel_selector::Datatype));
+        buffer(_kernel_data.internalBufferSizes, _kernel_data.kernels, _kernel_ids);
     }
 
     virtual bool optimized_out(typed_primitive_inst<PType>&) const { return false; }
@@ -116,7 +118,7 @@ protected:
         return stream.enqueue_marker(events, is_output);
     }
 
-    void init_kernels(const program_node& node) override {
+    void init_kernels(const kernels_cache& kernels_cache) override {
         if (is_cpu()) {
             return;
         }
@@ -124,7 +126,7 @@ protected:
 
         _kernels.reserve(_kernel_ids.size());
         for (size_t k = 0; k < _kernel_ids.size(); ++k) {
-            _kernels.emplace_back(std::move(node.get_program().get_kernel(_kernel_ids[k])));
+            _kernels.emplace_back(std::move(kernels_cache.get_kernel(_kernel_ids[k])));
         }
     }
 

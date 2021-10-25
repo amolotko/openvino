@@ -29,10 +29,14 @@ struct lrn_impl : typed_primitive_impl_ocl<lrn> {
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+    }
 
     static primitive_impl* create(const lrn_node& arg) {
         auto lrn_params = get_default_params<kernel_selector::lrn_params>(arg);

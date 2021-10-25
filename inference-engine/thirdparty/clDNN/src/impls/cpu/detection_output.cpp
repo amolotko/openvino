@@ -825,7 +825,7 @@ struct detection_output_impl : typed_primitive_impl<detection_output> {
         return ev;
     }
 
-    void init_kernels(const program_node&) override {}
+    void init_kernels(const kernels_cache&) override {}
 
     static primitive_impl* create(const detection_output_node& arg) { return new detection_output_impl(arg); }
 };

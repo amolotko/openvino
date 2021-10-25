@@ -29,10 +29,14 @@ struct region_yolo_impl : typed_primitive_impl_ocl<region_yolo> {
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+    }
 
     static primitive_impl* create(const region_yolo_node& arg) {
         auto ry_params = get_default_params<kernel_selector::region_yolo_params>(arg);

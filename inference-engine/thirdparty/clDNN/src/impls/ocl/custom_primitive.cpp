@@ -45,8 +45,8 @@ struct custom_gpu_primitive_impl : typed_primitive_impl<custom_gpu_primitive> {
         _kernel_id = arg.get_program().add_kernel(cl_kernel->code.kernelString);
     }
 
-    void init_kernels(const program_node& node) override {
-        _kernels.emplace_back(std::move(node.get_program().get_kernel(_kernel_id)));
+    void init_kernels(const kernels_cache& kernels_cache) override {
+        _kernels.emplace_back(std::move(kernels_cache.get_kernel(_kernel_id)));
     }
 
     void set_arguments_impl(custom_gpu_primitive_inst& instance) override {
@@ -60,7 +60,7 @@ struct custom_gpu_primitive_impl : typed_primitive_impl<custom_gpu_primitive> {
     }
 
     event::ptr execute_impl(const std::vector<event::ptr>& events,
-                                 custom_gpu_primitive_inst& instance) override {
+                            custom_gpu_primitive_inst& instance) override {
         auto& stream = instance.get_network().get_stream();
         kernel_arguments_data args;
         for (auto& dep : instance.dependencies()) {

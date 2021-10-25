@@ -112,10 +112,14 @@ struct resample_impl : typed_primitive_impl_ocl<resample> {
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+    }
 
     static primitive_impl* create(const resample_node& arg) {
         auto us_params = get_default_params<kernel_selector::resample_params>(arg);

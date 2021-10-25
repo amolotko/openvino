@@ -43,10 +43,16 @@ struct crop_impl : typed_primitive_impl_ocl<crop> {
     }
 
     template <typename BufferType>
-    void save(BufferType& buffer) const {}
+    void save(BufferType& buffer) const {
+        parent::save(buffer);
+        buffer(_can_be_optimized);
+    }
 
     template <typename BufferType>
-    void load(BufferType& buffer) {}
+    void load(BufferType& buffer) {
+        parent::load(buffer);
+        buffer(_can_be_optimized);
+    }
 
 protected:
     bool optimized_out(crop_inst& instance) const override {
