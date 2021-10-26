@@ -19,6 +19,22 @@ struct fully_connected_onednn : typed_primitive_onednn_impl<fully_connected, dnn
     using parent = typed_primitive_onednn_impl<fully_connected, dnnl::inner_product_forward::desc>;
     using parent::parent;
 
+    fully_connected_onednn(const fully_connected_node& arg,
+                           std::shared_ptr<dnnl::inner_product_forward::desc> desc,
+                           std::shared_ptr<dnnl::primitive_attr> attrs,
+                           const dnnl::primitive_desc& pd,
+                           kernel_selector::WeightsReorderParams weights_reorder = {}) :
+        parent(desc, attrs, pd, weights_reorder),
+        _id(arg.id()) {}
+
+    void align_state(const program_node& arg) override {
+        if (!arg.is_type<fully_connected>()) {
+            throw std::invalid_argument("Should be fully_conected node");
+        }
+        const auto& fully_connected_node = arg.as<fully_connected>();
+        _id = fully_connected_node.id();
+    }
+
 protected:
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<fully_connected_onednn>(*this);
@@ -27,11 +43,10 @@ protected:
     bool validate_impl(const typed_primitive_inst<fully_connected>& instance) const override {
         bool res = true;
 
-        auto outer_id = _outer.id();
         auto data_type = instance.node.input().get_output_layout().data_type;
 
         // Integer signed/unsigned is ok for fully connected
-        CLDNN_ERROR_DATA_TYPES_MISMATCH_IGNORE_SIGN(outer_id,
+        CLDNN_ERROR_DATA_TYPES_MISMATCH_IGNORE_SIGN(_id,
                                                     "Input memory",
                                                     data_type,
                                                     "filter memory",
@@ -147,6 +162,9 @@ public:
 
         return new fully_connected_onednn(arg, desc, attr, prim_desc, get_weights_reorder(arg, prim_desc));
     }
+
+private:
+    primitive_id _id;
 };
 
 namespace detail {

@@ -212,21 +212,6 @@ primitive_inst::primitive_inst(network& network, program_node const& node, bool 
     if (_impl) {
         _impl->align_state(node);
     }
-    // if (node.is_type<activation>()) {
-    //     {
-    //         auto tmp_impl = _impl->clone();
-    //         std::ofstream ofs("archive.bin", std::ios::binary);
-    //         BinaryOutputBuffer ob(ofs);
-    //         ob << tmp_impl;
-    //     }
-    //     {
-    //         std::unique_ptr<primitive_impl> tmp_impl;
-    //         std::ifstream ifs("archive.bin", std::ios::binary);
-    //         BinaryInputBuffer ib(ifs, network.get_engine());
-
-    //         ib >> tmp_impl;
-    //     }
-    // }
 }
 
 void primitive_inst::allocate_internal_buffers(void) {

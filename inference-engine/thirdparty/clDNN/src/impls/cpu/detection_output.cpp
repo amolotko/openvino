@@ -7,6 +7,9 @@
 #include "math_utils.h"
 #include "register.hpp"
 #include "cpu_impl_helpers.hpp"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
+#include "serialization/helpers.hpp"
 
 #include <algorithm>
 #include <stdexcept>
@@ -43,8 +46,14 @@ bool comp_score_descend<std::pair<int, int>>(const std::pair<float, std::pair<in
 
 /************************ Detection Output CPU ************************/
 struct detection_output_impl : typed_primitive_impl<detection_output> {
+private:
+    using parent = typed_primitive_impl<detection_output>;
+    using parent::parent;
+
+public:
     enum class NMSType {CAFFE, MXNET};
     NMSType nms_type;
+    static const object_type type;
 
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<detection_output_impl>(*this);
@@ -59,6 +68,20 @@ struct detection_output_impl : typed_primitive_impl<detection_output> {
         }
         const auto& detection_output_node = arg.as<detection_output>();
         nms_type = (detection_output_node.get_primitive()->decrease_label_id ? NMSType::MXNET : NMSType::CAFFE);
+    }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {
+        buffer << make_data(&nms_type, sizeof(NMSType));
+    }
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {
+        buffer >> make_data(&nms_type, sizeof(NMSType));
     }
 
     static inline void intersect_bbox(const bounding_box& bbox1,
@@ -830,6 +853,8 @@ struct detection_output_impl : typed_primitive_impl<detection_output> {
     static primitive_impl* create(const detection_output_node& arg) { return new detection_output_impl(arg); }
 };
 
+const object_type detection_output_impl::type = object_type::DETECTION_OUTPUT_IMPL_CPU;
+
 namespace detail {
 
 attach_detection_output_impl::attach_detection_output_impl() {
@@ -843,3 +868,4 @@ attach_detection_output_impl::attach_detection_output_impl() {
 
 }  // namespace cpu
 }  // namespace cldnn
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::cpu::detection_output_impl)

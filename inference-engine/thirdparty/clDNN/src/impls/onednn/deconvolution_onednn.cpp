@@ -31,9 +31,9 @@ struct deconvolution_onednn : typed_primitive_onednn_impl<deconvolution, dnnl::d
 
       void align_state(const program_node& arg) override {
         if (!arg.is_type<deconvolution>()) {
-            throw std::invalid_argument("Should be convolution node");
+            throw std::invalid_argument("Should be deconvolution node");
         }
-        const auto& deconvolution_node = arg.as<convolution>();
+        const auto& deconvolution_node = arg.as<deconvolution>();
         _id = deconvolution_node.id();
     }
 

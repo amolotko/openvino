@@ -16,9 +16,20 @@
 #include <set>
 
 #include <threading/ie_cpu_streams_executor.hpp>
+#include "kernels_factory.hpp"
+#include "ocl/ocl_engine.hpp"
 #include "serialization/vector_serializer.hpp"
 #include "serialization/map_serializer.hpp"
 #include "serialization/string_serializer.hpp"
+
+// #if (CLDNN_THREADING == CLDNN_THREADING_TBB)
+// #include <tbb/task_arena.h>
+// #elif(CLDNN_THREADING == CLDNN_THREADING_THREADPOOL)
+// #include <queue>
+// #include <future>
+// #include <functional>
+// #include <condition_variable>
+// #endif
 
 namespace cldnn {
 class kernels_cache {
@@ -84,7 +95,7 @@ public:
         _kernels.clear();
         std::unique_ptr<ocl::ocl_engine> build_engine = nullptr;
         if (_engine.type() == engine_types::ocl) {
-            build_engine = make_unique<ocl::ocl_engine>(_engine.get_device(), runtime_types::ocl, _engine.configuration());
+            build_engine = make_unique<ocl::ocl_engine>(_engine.get_device(), runtime_types::ocl, _engine.configuration(), _engine.get_task_executor());
         }
         for (auto& si : serialize_info_container) {
             cl::Program::Binaries binary_kernels{si.precompiled_kernels};

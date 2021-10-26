@@ -35,7 +35,7 @@ public:
     void save(BufferType& buffer) const {}
 
     template <typename BufferType>
-    void load(BufferType& buffer) const {}
+    void load(BufferType& buffer) {}
 
     void init_kernels(const kernels_cache&) override {}
     void set_arguments(primitive_inst& /*instance*/) override {}

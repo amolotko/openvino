@@ -7,6 +7,8 @@
 #include "impls/implementation_map.hpp"
 #include "cldnn/runtime/error_handler.hpp"
 #include "register.hpp"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
 
 #include <algorithm>
 #include <string>
@@ -190,9 +192,21 @@ struct im_info_t {
 };
 
 struct proposal_impl : typed_primitive_impl<proposal> {
+    static const object_type type;
+
     std::unique_ptr<primitive_impl> clone() const override {
         return make_unique<proposal_impl>(*this);
     }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType&) const {}
+
+    template <typename BufferType>
+    void load(BufferType&) {}
 
     template <typename dtype>
     void read_image_info(stream& stream, proposal_inst& instance, im_info_t& im_info) {
@@ -441,6 +455,8 @@ struct proposal_impl : typed_primitive_impl<proposal> {
     }
 };
 
+const object_type proposal_impl::type = object_type::PROPOSAL_IMPL_CPU;
+
 namespace detail {
 
 attach_proposal_impl::attach_proposal_impl() {
@@ -453,3 +469,4 @@ attach_proposal_impl::attach_proposal_impl() {
 }  // namespace detail
 }  // namespace cpu
 }  // namespace cldnn
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::cpu::proposal_impl)

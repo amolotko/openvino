@@ -45,11 +45,13 @@ struct scale_impl : typed_primitive_impl_ocl<scale> {
     template <typename BufferType>
     void save(BufferType& buffer) const {
         parent::save(buffer);
+        buffer(_bias_term);
     }
 
     template <typename BufferType>
     void load(BufferType& buffer) {
         parent::load(buffer);
+        buffer(_bias_term);
     }
 
 protected:

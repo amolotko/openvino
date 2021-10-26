@@ -183,7 +183,7 @@ private:
     }
 };
 
-const object_type non_max_suppression_impl::type = object_type::NON_MAX_SUPPRESSION_IMPL;
+const object_type non_max_suppression_impl::type = object_type::NON_MAX_SUPPRESSION_IMPL_OCL;
 
 namespace detail {
 

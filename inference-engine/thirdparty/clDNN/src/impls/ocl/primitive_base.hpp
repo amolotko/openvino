@@ -14,6 +14,7 @@
 #include "register.hpp"
 #include "serialization/vector_serializer.hpp"
 #include "serialization/string_serializer.hpp"
+#include "serialization/cl_kernel_data_serializer.hpp"
 #include "serialization/helpers.hpp"
 #include <vector>
 #include <list>

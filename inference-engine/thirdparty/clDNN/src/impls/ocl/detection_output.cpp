@@ -89,7 +89,7 @@ public:
     }
 };
 
-const object_type detection_output_impl::type = object_type::DETECTION_OUTPUT_IMPL;
+const object_type detection_output_impl::type = object_type::DETECTION_OUTPUT_IMPL_OCL;
 
 namespace detail {
 

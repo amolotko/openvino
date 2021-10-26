@@ -55,14 +55,12 @@ struct activation_impl : typed_primitive_impl_ocl<activation> {
     void save(BufferType& buffer) const {
         parent::save(buffer);
         buffer << _is_parameterized;
-        std::cout << "+++ ACTIVATION SAVE +++" << std::endl;
     }
 
     template <typename BufferType>
     void load(BufferType& buffer) {
         parent::load(buffer);
         buffer >> _is_parameterized;
-        std::cout << "+++ ACTIVATION LOAD +++" << std::endl;
     }
 
     static primitive_impl* create(const activation_node& arg) {

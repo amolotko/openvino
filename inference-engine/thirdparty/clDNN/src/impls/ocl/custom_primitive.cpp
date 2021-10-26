@@ -10,6 +10,9 @@
 #include "cldnn/runtime/error_handler.hpp"
 #include "register.hpp"
 #include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
+#include "serialization/cl_kernel_data_serializer.hpp"
+#include "serialization/string_serializer.hpp"
 
 #include <map>
 #include <sstream>
@@ -25,6 +28,7 @@ namespace cldnn {
 namespace ocl {
 
 struct custom_gpu_primitive_impl : typed_primitive_impl<custom_gpu_primitive> {
+    static const object_type type;
     std::shared_ptr<kernel_selector::cl_kernel_data> cl_kernel;
     std::vector<kernel::ptr> _kernels;
     kernel_id _kernel_id;
@@ -43,6 +47,21 @@ struct custom_gpu_primitive_impl : typed_primitive_impl<custom_gpu_primitive> {
     custom_gpu_primitive_impl(const custom_gpu_primitive_node& arg,
                              std::shared_ptr<kernel_selector::cl_kernel_data>& cl_kernel) : cl_kernel(cl_kernel), _kernels() {
         _kernel_id = arg.get_program().add_kernel(cl_kernel->code.kernelString);
+    }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {
+        buffer(*cl_kernel, _kernel_id);
+    }
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {
+        cl_kernel = std::make_shared<kernel_selector::cl_kernel_data>();
+        buffer(*cl_kernel, _kernel_id);
     }
 
     void init_kernels(const kernels_cache& kernels_cache) override {
@@ -69,6 +88,10 @@ struct custom_gpu_primitive_impl : typed_primitive_impl<custom_gpu_primitive> {
         args.output = instance.output_memory_ptr();
         return stream.enqueue_kernel(*_kernels.front(), cl_kernel.get()->params, args, events, instance.node.is_output());
     }
+
+private:
+    using parent = typed_primitive_impl<custom_gpu_primitive>;
+    using parent::parent;
 };
 
 static kernel_selector::kernel_argument_element get_arg(custom_gpu_primitive::arg_desc arg) {
@@ -222,6 +245,8 @@ static primitive_impl* create(const custom_gpu_primitive_node& arg) {
     return new custom_gpu_primitive_impl(arg, cl_kernel);
 }
 
+const object_type custom_gpu_primitive_impl::type = object_type::CUSTOM_GPU_PRIMITIVE_IMPL;
+
 namespace detail {
 
 attach_custom_gpu_primitive_impl::attach_custom_gpu_primitive_impl() {
@@ -231,3 +256,4 @@ attach_custom_gpu_primitive_impl::attach_custom_gpu_primitive_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::custom_gpu_primitive_impl)

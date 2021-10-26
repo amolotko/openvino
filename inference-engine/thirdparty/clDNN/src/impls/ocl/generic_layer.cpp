@@ -7,12 +7,17 @@
 #include "impls/implementation_map.hpp"
 #include "kernel_selector_helper.h"
 #include "register.hpp"
+#include "object_types.hpp"
+#include "serialization/binary_buffer.hpp"
+#include "serialization/cl_kernel_data_serializer.hpp"
+#include "serialization/string_serializer.hpp"
 #include <vector>
 
 namespace cldnn {
 namespace ocl {
 
 struct generic_layer_impl : typed_primitive_impl<generic_layer> {
+    static const object_type type;
     kernel_selector::cl_kernel_data _cl_kernel_data;
     std::vector<kernel::ptr> _kernels;
     kernel_id _kernel_id;
@@ -30,6 +35,20 @@ struct generic_layer_impl : typed_primitive_impl<generic_layer> {
 
     generic_layer_impl(const generic_layer_node& arg) : _cl_kernel_data(*arg.get_primitive()->generic_params.clKernel), _kernels({}) {
         _kernel_id = arg.get_program().add_kernel(_cl_kernel_data.code.kernelString);
+    }
+
+    object_type get_type() const override {
+        return type;
+    }
+
+    template <typename BufferType>
+    void save(BufferType& buffer) const {
+        buffer(_cl_kernel_data, _kernel_id);
+    }
+
+    template <typename BufferType>
+    void load(BufferType& buffer) {
+        buffer(_cl_kernel_data, _kernel_id);
     }
 
     void init_kernels(const kernels_cache& kernels_cache) override {
@@ -59,59 +78,16 @@ struct generic_layer_impl : typed_primitive_impl<generic_layer> {
         args.output = instance.output_memory_ptr();
         return stream.enqueue_kernel(*_kernels.front(), _cl_kernel_data.params, args, events, true);
     }
+
+private:
+    using parent = typed_primitive_impl<generic_layer>;
+    using parent::parent;
 };
 
-// TODO: move this file to cpu folder and add a new traget to 'cldnn::engine_types'
-struct generic_layer_cpu : typed_primitive_impl<generic_layer> {
-    // const generic_layer_node& outer;
-    std::shared_ptr<kernel_selector::CPUKernel> _cpu_kernel_data;
-
-    std::unique_ptr<primitive_impl> clone() const override {
-        return make_unique<generic_layer_cpu>(*this);
-    }
-
-    explicit generic_layer_cpu(const generic_layer_node& arg) : _cpu_kernel_data(arg.get_primitive()->generic_params.cpuKernel) {}
-
-    void align_state(const program_node& arg) override {
-        if (!arg.is_type<generic_layer>()) {
-            throw std::invalid_argument("Should be generic_layer node");
-        }
-        const auto& generic_layer_node = arg.as<generic_layer>();
-        _cpu_kernel_data = generic_layer_node.get_primitive()->generic_params.cpuKernel;
-    }
-
-    event::ptr execute_impl(const std::vector<event::ptr>& events, generic_layer_inst& instance) override {
-        stream& stream = instance.get_network().get_stream();
-        auto input_mem = instance.input_memory_ptr();
-        auto output_mem = instance.output_memory_ptr();
-
-        auto ev = stream.create_user_event(false);
-        std::vector<event::ptr> tmp_events(events);
-
-        for (auto& a : events) {
-            a->wait();
-        }
-
-        mem_lock<uint8_t, mem_lock_type::read> old_pointer(input_mem, stream);
-        mem_lock<uint8_t, mem_lock_type::write> new_pointer(output_mem, stream);
-
-        // const auto& cpu_kernel = *outer.get_primitive()->generic_params.cpuKernel.get();
-
-        _cpu_kernel_data->Execute(old_pointer.data(), old_pointer.size(), new_pointer.data(), new_pointer.size());
-
-        ev->set();
-        return ev;
-    }
-
-    void init_kernels(const kernels_cache&) override {}
-};
+const object_type generic_layer_impl::type = object_type::GENERIC_LAYER_IMPL;
 
 static primitive_impl* create(const generic_layer_node& arg) {
-    if (arg.get_primitive()->generic_params.engine == kernel_selector::generic_kernel_params::Engine::GPU) {
-        return new generic_layer_impl(arg);
-    } else {
-        return new generic_layer_cpu(arg);
-    }
+    return new generic_layer_impl(arg);
 }
 
 namespace detail {
@@ -122,3 +98,4 @@ attach_generic_layer_impl::attach_generic_layer_impl() {
 }  // namespace detail
 }  // namespace ocl
 }  // namespace cldnn
+BIND_BINARY_BUFFER_WITH_TYPE(cldnn::ocl::generic_layer_impl)
